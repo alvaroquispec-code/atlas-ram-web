@@ -26,5 +26,3 @@ export default function Alert({ tone = 'info', children, action }: AlertProps) {
     </div>
   )
 }
-
-src/components/Button.tsx
