@@ -39,3 +39,56 @@ export interface ApiErrorBody {
   fieldErrors?: Record<string, string>
 }
 
+export type Interpretation = 'SUSCEPTIBLE' | 'INTERMEDIATE' | 'RESISTANT'
+export type Specimen = 'BLOOD' | 'URINE' | 'RESPIRATORY' | 'WOUND' | 'CSF' | 'STOOL' | 'OTHER'
+
+export interface Microorganism {
+  id: number
+  code: string
+  genus: string
+  species: string | null
+  gramStain: string
+}
+
+export interface Antibiotic {
+  id: number
+  code: string
+  name: string
+  antibioticClass: string
+}
+
+export interface Isolate {
+  id: number
+  collectionDate: string
+  specimenType: Specimen
+  patientAge: number | null
+  patientSex: string | null
+  facilityName: string
+  districtUbigeo: string
+  districtName: string
+  microorganismName: string
+  dataUploadId: number | null
+}
+
+export interface SusceptibilityResult {
+  id: number
+  isolateId: number
+  antibioticCode: string
+  antibioticName: string
+  micValue: number | null
+  diskDiffusionMm: number | null
+  interpretation: Interpretation
+  reportedInterpretation: Interpretation | null
+  breakpointStandard: string
+  breakpointVersion: string
+}
+
+export interface DistrictResistance {
+  districtId: number
+  ubigeo: string
+  name: string
+  totalTested: number
+  resistantCount: number
+  resistancePercentage: number | null
+  sufficientData: boolean
+}
