@@ -4,12 +4,13 @@ import { apiClient } from './apiClient'
 export interface IsolateQuery {
   page: number
   size: number
+  facilityId?: number
 }
 
 export const isolateService = {
-  async list({ page, size }: IsolateQuery, signal?: AbortSignal) {
+  async list({ page, size, facilityId }: IsolateQuery, signal?: AbortSignal) {
     const { data } = await apiClient.get<Page<Isolate>>('/isolates', {
-      params: { page, size, sort: 'collectionDate,desc' },
+      params: { page, size, facilityId, sort: 'collectionDate,desc' },
       signal,
     })
     return data
