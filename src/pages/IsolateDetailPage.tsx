@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import Breadcrumbs from '../components/Breadcrumbs'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
 import InterpretationBadge from '../components/InterpretationBadge'
@@ -35,9 +36,13 @@ export default function IsolateDetailPage() {
 
   return (
     <section className="space-y-6">
-      <Link to="/isolates" className="text-sm font-medium text-brand-600 hover:underline">
-        ← Volver a aislamientos
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: 'Panel', to: '/dashboard' },
+          { label: 'Aislamientos', to: '/isolates' },
+          { label: `Aislamiento #${isolate.id}` },
+        ]}
+      />
 
       <header className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
         <h1 className="text-2xl font-semibold italic">{isolate.microorganismName}</h1>
@@ -65,6 +70,13 @@ export default function IsolateDetailPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
+            {results.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                  Este aislamiento aún no tiene resultados de sensibilidad.
+                </td>
+              </tr>
+            )}
             {results.map((result) => (
               <tr key={result.id}>
                 <td className="px-4 py-3">
