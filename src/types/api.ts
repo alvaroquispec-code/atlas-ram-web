@@ -92,3 +92,12 @@ export interface DistrictResistance {
   resistancePercentage: number | null
   sufficientData: boolean
 }
+
+
+export interface Facility {
+  id: number
+  code: string
+  name: string
+  districtId: number
+  districtName: string
+}
