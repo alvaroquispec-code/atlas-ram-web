@@ -1,9 +1,12 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
+import Breadcrumbs from '../components/Breadcrumbs'
 import Button from '../components/Button'
 import Pagination from '../components/Pagination'
+import SelectField from '../components/SelectField'
 import Spinner from '../components/Spinner'
 import { useFetch } from '../hooks/useFetch'
+import { catalogService } from '../services/catalogService'
 import { isolateService } from '../services/isolateService'
 import { formatDate, SPECIMEN_LABELS } from '../utils/labels'
 
@@ -14,20 +17,40 @@ export default function IsolatesPage() {
   // La página y el tamaño se leen de la URL: /isolates?page=2&size=50
   const page = Math.max(0, Number(searchParams.get('page') ?? 0))
   const size = Number(searchParams.get('size') ?? DEFAULT_SIZE)
+  const facilityId = searchParams.get('facilityId') ?? ''
 
+  const facilities = useFetch((signal) => catalogService.facilities(signal), [])
   const { data, error, isLoading, reload } = useFetch(
-    (signal) => isolateService.list({ page, size }, signal),
-    [page, size],
+    (signal) => isolateService.list({ page, size, facilityId: facilityId ? Number(facilityId) : undefined }, signal),
+    [page, size, facilityId],
   )
 
-  const goTo = (nextPage: number, nextSize = size) =>
-    setSearchParams({ page: String(nextPage), size: String(nextSize) })
+  // Cambiar de filtro vuelve a la primera página; el filtro también queda en la URL.
+  const goTo = (nextPage: number, nextSize = size, nextFacility = facilityId) => {
+    const params: Record<string, string> = { page: String(nextPage), size: String(nextSize) }
+    if (nextFacility) params.facilityId = nextFacility
+    setSearchParams(params)
+  }
 
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Aislamientos</h1>
-        <p className="text-sm text-slate-500">Muestras registradas por los laboratorios, de la más reciente a la más antigua.</p>
+      <Breadcrumbs items={[{ label: 'Panel', to: '/dashboard' }, { label: 'Aislamientos' }]} />
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Aislamientos</h1>
+          <p className="text-sm text-slate-500">Muestras registradas por los laboratorios, de la más reciente a la más antigua.</p>
+        </div>
+        <SelectField
+          label="Establecimiento"
+          className="w-72"
+          value={facilityId}
+          disabled={facilities.isLoading}
+          onChange={(e) => goTo(0, size, e.target.value)}
+          options={[
+            { value: '', label: 'Todos los establecimientos' },
+            ...(facilities.data ?? []).map((f) => ({ value: f.id, label: f.name })),
+          ]}
+        />
       </header>
 
       {error ? (

@@ -6,10 +6,13 @@ import { useAuth } from '../hooks/useAuth'
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Panel' },
   { to: '/isolates', label: 'Aislamientos' },
+  { to: '/users', label: 'Usuarios', adminOnly: true },
 ]
 
 export default function AppLayout() {
-  const { user, logout } = useAuth()
+  const { user, logout, hasRole } = useAuth()
+  // El link de Usuarios solo se muestra a administradores; la ruta además está protegida.
+  const visibleItems = NAV_ITEMS.filter((item) => !item.adminOnly || hasRole('ADMIN'))
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -17,7 +20,7 @@ export default function AppLayout() {
           <div className="flex items-center gap-6">
             <span className="font-semibold text-brand-700">Atlas RAM</span>
             <nav className="hidden gap-1 sm:flex">
-              {NAV_ITEMS.map((item) => (
+              {visibleItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
