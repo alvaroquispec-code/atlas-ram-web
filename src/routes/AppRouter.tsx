@@ -10,6 +10,7 @@ const RegisterPage = lazy(() => import('../pages/RegisterPage'))
 const DashboardPage = lazy(() => import('../pages/DashboardPage'))
 const IsolatesPage = lazy(() => import('../pages/IsolatesPage'))
 const IsolateDetailPage = lazy(() => import('../pages/IsolateDetailPage'))
+const UsersPage = lazy(() => import('../pages/UsersPage'))
 const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 
@@ -32,6 +33,14 @@ export default function AppRouter() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/isolates" element={<IsolatesPage />} />
           <Route path="/isolates/:id" element={<IsolateDetailPage />} />
+          <Route
+            path="/users"
+            element={
+              <PrivateRoute roles={['ADMIN']}>
+                <UsersPage />
+              </PrivateRoute>
+            }
+          />
           <Route path="/forbidden" element={<ForbiddenPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
