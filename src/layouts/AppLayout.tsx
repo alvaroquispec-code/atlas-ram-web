@@ -3,7 +3,10 @@ import Button from '../components/Button'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { useAuth } from '../hooks/useAuth'
 
-const NAV_ITEMS = [{ to: '/dashboard', label: 'Panel' }]
+const NAV_ITEMS = [
+  { to: '/dashboard', label: 'Panel' },
+  { to: '/isolates', label: 'Aislamientos' },
+]
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
@@ -43,4 +46,3 @@ export default function AppLayout() {
     </div>
   )
 }
-
