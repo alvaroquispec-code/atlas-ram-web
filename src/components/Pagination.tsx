@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Button from './Button'
 
 interface PaginationProps {
@@ -21,11 +22,13 @@ export default function Pagination({
 }: PaginationProps) {
   const isFirst = page <= 0
   const isLast = page >= totalPages - 1
+  const from = totalElements === 0 ? 0 : page * size + 1
+  const to = Math.min((page + 1) * size, totalElements)
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
       <span>
-        {totalElements} registros · página {totalPages === 0 ? 0 : page + 1} de {totalPages}
+        Mostrando {from}–{to} de {totalElements} · página {totalPages === 0 ? 0 : page + 1} de {totalPages}
       </span>
       <div className="flex items-center gap-2">
         <label className="flex items-center gap-2">
@@ -43,10 +46,12 @@ export default function Pagination({
           </select>
         </label>
         <Button variant="secondary" disabled={isFirst} onClick={() => onPageChange(page - 1)}>
+          <ChevronLeft size={16} aria-hidden />
           Anterior
         </Button>
         <Button variant="secondary" disabled={isLast} onClick={() => onPageChange(page + 1)}>
           Siguiente
+          <ChevronRight size={16} aria-hidden />
         </Button>
       </div>
     </div>

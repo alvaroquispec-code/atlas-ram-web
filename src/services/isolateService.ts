@@ -1,16 +1,22 @@
-import type { Isolate, Page, SusceptibilityResult } from '../types/api'
+import type { Isolate, Page, Specimen, SusceptibilityResult } from '../types/api'
 import { apiClient } from './apiClient'
+
+export type IsolateSort = 'collectionDate,desc' | 'collectionDate,asc'
 
 export interface IsolateQuery {
   page: number
   size: number
   facilityId?: number
+  microorganismId?: number
+  specimen?: Specimen
+  sort?: IsolateSort
 }
 
 export const isolateService = {
-  async list({ page, size, facilityId }: IsolateQuery, signal?: AbortSignal) {
+  async list({ page, size, facilityId, microorganismId, specimen, sort = 'collectionDate,desc' }: IsolateQuery, signal?: AbortSignal) {
+    // axios omite los parámetros undefined, así que solo viajan los filtros elegidos.
     const { data } = await apiClient.get<Page<Isolate>>('/isolates', {
-      params: { page, size, facilityId, sort: 'collectionDate,desc' },
+      params: { page, size, facilityId, microorganismId, specimen, sort },
       signal,
     })
     return data
@@ -19,6 +25,10 @@ export const isolateService = {
   async findById(id: number, signal?: AbortSignal) {
     const { data } = await apiClient.get<Isolate>(`/isolates/${id}`, { signal })
     return data
+  },
+
+  async remove(id: number) {
+    await apiClient.delete(`/isolates/${id}`)
   },
 
   async results(id: number, signal?: AbortSignal) {

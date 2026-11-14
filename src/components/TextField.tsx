@@ -8,7 +8,7 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export default function TextField({ label, error, hint, className = '', ...props }: TextFieldProps) {
   const id = useId()
-  const describedBy = error ? `id-error`:hint?`{id}-hint` : undefined
+  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       <label htmlFor={id} className="text-sm font-medium text-slate-700">
