@@ -1,17 +1,27 @@
-import { useParams } from 'react-router-dom'
+import { RotateCw } from 'lucide-react'
+import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
 import InterpretationBadge from '../components/InterpretationBadge'
 import Spinner from '../components/Spinner'
+import { useAuth } from '../hooks/useAuth'
 import { useFetch } from '../hooks/useFetch'
+import { useToast } from '../hooks/useToast'
 import { isolateService } from '../services/isolateService'
+import { toApiError } from '../utils/apiError'
 import { formatDate, SPECIMEN_LABELS } from '../utils/labels'
 import NotFoundPage from './NotFoundPage'
 
 export default function IsolateDetailPage() {
   const { id } = useParams()
   const isolateId = Number(id)
+  const navigate = useNavigate()
+  const { hasRole } = useAuth()
+  const { showToast } = useToast()
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Pedimos el aislamiento y sus resultados en paralelo; si sales de la página, se cancelan los dos.
   const { data, error, isLoading, reload } = useFetch(
@@ -25,7 +35,7 @@ export default function IsolateDetailPage() {
   if (isLoading) return <div className="py-16"><Spinner label="Cargando aislamiento" /></div>
   if (error || !data) {
     return (
-      <Alert tone="error" action={<Button variant="ghost" onClick={reload}>Reintentar</Button>}>
+      <Alert tone="error" action={<Button variant="ghost" onClick={reload}><RotateCw size={16} aria-hidden />Reintentar</Button>}>
         {error?.message ?? 'No se pudo cargar el aislamiento.'}
       </Alert>
     )
@@ -33,6 +43,20 @@ export default function IsolateDetailPage() {
 
   const [isolate, results] = data
   const resistant = results.filter((r) => r.interpretation === 'RESISTANT').length
+
+  // Borrar un aislamiento también borra sus resultados y cambia el antibiograma: pedimos confirmación.
+  async function handleDelete() {
+    if (!window.confirm(`¿Eliminar el aislamiento #${isolate.id} y sus ${results.length} resultados? No se puede deshacer.`)) return
+    setIsDeleting(true)
+    try {
+      await isolateService.remove(isolate.id)
+      showToast(`Aislamiento #${isolate.id} eliminado`, 'success')
+      navigate('/isolates', { replace: true })
+    } catch (err) {
+      showToast(toApiError(err).message, 'error')
+      setIsDeleting(false)
+    }
+  }
 
   return (
     <section className="space-y-6">
@@ -45,7 +69,15 @@ export default function IsolateDetailPage() {
       />
 
       <header className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-        <h1 className="text-2xl font-semibold italic">{isolate.microorganismName}</h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-2xl font-semibold italic">{isolate.microorganismName}</h1>
+          {hasRole('ADMIN') && (
+            <Button variant="danger" isLoading={isDeleting} onClick={handleDelete}>
+              {!isDeleting && <Trash2 size={16} aria-hidden />}
+              Eliminar
+            </Button>
+          )}
+        </div>
         <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-4">
           <Info label="Fecha de toma" value={formatDate(isolate.collectionDate)} />
           <Info label="Muestra" value={SPECIMEN_LABELS[isolate.specimenType]} />

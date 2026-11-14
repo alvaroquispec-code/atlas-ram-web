@@ -1,5 +1,5 @@
-import NotFoundPage from './NotFoundPage'
+import StatusPage from '../components/StatusPage'
 
 export default function ForbiddenPage() {
-  return <NotFoundPage title="Acceso restringido" message="Tu rol no tiene permiso para ver esta sección." />
+  return <StatusPage code={403} title="Acceso restringido" message="Tu rol no tiene permiso para ver esta sección." />
 }

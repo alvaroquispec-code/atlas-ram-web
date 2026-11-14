@@ -1,3 +1,4 @@
+import { RotateCw } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
@@ -83,7 +84,7 @@ export default function DashboardPage() {
       </div>
 
       {catalogs.error && (
-        <Alert tone="error" action={<Button variant="ghost" onClick={catalogs.reload}>Reintentar</Button>}>
+        <Alert tone="error" action={<Button variant="ghost" onClick={catalogs.reload}><RotateCw size={16} aria-hidden />Reintentar</Button>}>
           No pudimos cargar los catálogos. {catalogs.error.message}
         </Alert>
       )}
@@ -93,7 +94,7 @@ export default function DashboardPage() {
           <Spinner label="Calculando resistencia" />
         </div>
       ) : resistance.error ? (
-        <Alert tone="error" action={<Button variant="ghost" onClick={resistance.reload}>Reintentar</Button>}>
+        <Alert tone="error" action={<Button variant="ghost" onClick={resistance.reload}><RotateCw size={16} aria-hidden />Reintentar</Button>}>
           {resistance.error.message}
         </Alert>
       ) : (

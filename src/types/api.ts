@@ -57,6 +57,8 @@ export interface Antibiotic {
   antibioticClass: string
 }
 
+export type AntibioticInput = Omit<Antibiotic, 'id'>
+
 export interface Isolate {
   id: number
   collectionDate: string
