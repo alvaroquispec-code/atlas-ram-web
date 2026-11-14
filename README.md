@@ -10,9 +10,20 @@ Frontend web de **Atlas RAM**, la plataforma de antibiogramas acumulados de Lima
 
 Usuario de prueba: `admin@atlasram.test` / `AtlasRam2026!` (datos de demostración).
 
+## Integrantes y participación
+
+El porcentaje indica cuánto cumplió cada integrante de sus responsabilidades en cada fase (100 % = cumplimiento completo).
+
+| Integrante | Principales aportes | Fase 1 (API) | Fase 2 (web, móvil y despliegue) |
+|---|---|:---:|:---:|
+| Álvaro Felipe Quispe Carrillo | Modelo de dominio y lógica de la API; despliegue completo (AWS EC2, RDS, HTTPS con Caddy, Vercel, EAS); web: panel de resistencia, aislamientos, usuarios y catálogo; base de la app móvil | 100 % | 100 % |
+| Joaquim Alexander Carrión Díaz | Fase 1: autenticación JWT con refresh tokens y autorización por rol (#5). Fase 2: web, con login y registro, cliente API con interceptores y rutas protegidas | 100 % | 100 % |
+| Adriano Alonso Cosme Salazar | Fase 1: ingesta asíncrona de CSV, eventos de dominio y notificaciones (#8). Fase 2: app móvil, con escáner QR, registro de aislamientos y publicación del APK con EAS | 100 % | 100 % |
+| Fabian Isaias Sanchez Zedano | Fase 1: excepciones propias, manejo global de errores y endpoints de la API (#6). No participó en la fase 2 | 100 % | 0 % |
+
 ## Stack
 
-React 19 · TypeScript · Vite · Tailwind CSS 4 · React Router 7 · Axios
+React 19 · TypeScript · Vite · Tailwind CSS 4 · React Router 7 · Axios · Lucide (iconos)
 
 ## Vistas
 
@@ -20,8 +31,9 @@ React 19 · TypeScript · Vite · Tailwind CSS 4 · React Router 7 · Axios
 |---|---|---|
 | `/login`, `/register` | Inicio de sesión y registro con validación en tiempo real | Pública |
 | `/dashboard` | Resistencia por distrito: filtros de microorganismo, antibiótico y fechas (en query params), indicadores y cuadrícula por distrito | Autenticado |
-| `/isolates?page&size&facilityId` | Aislamientos paginados, con filtro por establecimiento | Autenticado |
-| `/isolates/:id` | Detalle del aislamiento con su antibiograma (CIM, halo, interpretación CLSI) | Autenticado |
+| `/isolates?page&size&sort&facilityId&microorganismId&specimen` | Aislamientos paginados con filtros combinables, orden por fecha y acceso directo por número | Autenticado |
+| `/isolates/:id` | Detalle del aislamiento con su antibiograma (CIM, halo, interpretación CLSI); un ADMIN puede eliminarlo (`DELETE`) con confirmación | Autenticado |
+| `/antibiotics?q=` | Catálogo de antibióticos: búsqueda con debounce (en query param) y edición en línea con `PUT /antibiotics/{id}` | Solo ADMIN |
 | `/users?page&size` | Administración de usuarios: cambio de rol y activar o desactivar con confirmación | Solo ADMIN |
 | `/forbidden`, `*` | Acceso denegado y 404 | — |
 
@@ -31,7 +43,7 @@ React 19 · TypeScript · Vite · Tailwind CSS 4 · React Router 7 · Axios
 src/
   components/   UI reutilizable (Button, TextField, SelectField, Pagination, Breadcrumbs, Alert, ErrorBoundary…)
   contexts/     AuthContext (sesión) y ToastContext (avisos)
-  hooks/        useAuth, useFetch (con AbortController), useForm, useToast
+  hooks/        useAuth, useFetch (con AbortController), useForm, useToast, useDebouncedValue
   layouts/      AppLayout (navegación) y AuthLayout
   pages/        una página por ruta, cargada con React.lazy
   routes/       AppRouter: rutas centralizadas, PrivateRoute con roles

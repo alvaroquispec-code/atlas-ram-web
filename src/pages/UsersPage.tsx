@@ -1,3 +1,4 @@
+import { RotateCw } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Breadcrumbs from '../components/Breadcrumbs'
@@ -50,7 +51,7 @@ export default function UsersPage() {
       </header>
 
       {error ? (
-        <Alert tone="error" action={<Button variant="ghost" onClick={reload}>Reintentar</Button>}>
+        <Alert tone="error" action={<Button variant="ghost" onClick={reload}><RotateCw size={16} aria-hidden />Reintentar</Button>}>
           {error.message}
         </Alert>
       ) : (
