@@ -133,7 +133,6 @@ export default function UsersPage() {
           totalPages={data.totalPages}
           totalElements={data.totalElements}
           size={size}
-          sizeOptions={[5, 10, 25]}
           onPageChange={(next) => goTo(next)}
           onSizeChange={(nextSize) => goTo(0, nextSize)}
         />

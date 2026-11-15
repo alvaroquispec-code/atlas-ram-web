@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Atlas RAM</title>
+    <script>
+      // Aplica el tema guardado antes de pintar, para evitar un destello blanco en modo oscuro.
+      try {
+        var t = localStorage.getItem('atlasram.theme')
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

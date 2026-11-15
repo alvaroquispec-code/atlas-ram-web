@@ -20,6 +20,11 @@ export const catalogService = {
     return data.content
   },
 
+  async createAntibiotic(input: AntibioticInput) {
+    const { data } = await apiClient.post<Antibiotic>('/antibiotics', input)
+    return data
+  },
+
   async updateAntibiotic(id: number, input: AntibioticInput) {
     const { data } = await apiClient.put<Antibiotic>(`/antibiotics/${id}`, input)
     return data
