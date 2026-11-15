@@ -33,7 +33,7 @@ React 19 · TypeScript · Vite · Tailwind CSS 4 · React Router 7 · Axios · L
 | `/dashboard` | Resistencia por distrito: filtros de microorganismo, antibiótico y fechas (en query params), indicadores y cuadrícula por distrito | Autenticado |
 | `/isolates?page&size&sort&facilityId&microorganismId&specimen` | Aislamientos paginados con filtros combinables, orden por fecha y acceso directo por número | Autenticado |
 | `/isolates/:id` | Detalle del aislamiento con su antibiograma (CIM, halo, interpretación CLSI); un ADMIN puede eliminarlo (`DELETE`) con confirmación | Autenticado |
-| `/antibiotics?q=` | Catálogo de antibióticos: búsqueda con debounce (en query param) y edición en línea con `PUT /antibiotics/{id}` | Solo ADMIN |
+| `/antibiotics?q=` | Catálogo de antibióticos: búsqueda con debounce (en query param) y creación con `POST /antibiotics` y edición en línea con `PUT /antibiotics/{id}` | Solo ADMIN |
 | `/users?page&size` | Administración de usuarios: cambio de rol y activar o desactivar con confirmación | Solo ADMIN |
 | `/forbidden`, `*` | Acceso denegado y 404 | — |
 
@@ -53,7 +53,10 @@ src/
 ```
 
 - **Autenticación:** el access token vive en memoria y el refresh token en `sessionStorage`. Un interceptor agrega `Authorization: Bearer`. Ante un 401 renueva el token una sola vez con `/auth/refresh`, aunque haya varias peticiones a la vez, y repite la petición.
+- **Reintentos:** si un `GET` falla por red, timeout o 5xx, el interceptor lo repite hasta 2 veces con espera exponencial (500 ms y 1 s). Los `POST`, `PUT` y `DELETE` no se reintentan para no duplicar operaciones.
 - **Errores:** `utils/apiError.ts` traduce cada código HTTP, timeout o falta de conexión a un mensaje claro. Un `ErrorBoundary` evita que un error de renderizado tumbe toda la app.
+- **Modo oscuro:** botón sol/luna en la barra y en el login. Arranca con la preferencia del sistema y recuerda la elección. Se implementó redefiniendo las variables de color de Tailwind 4 bajo `.dark`, sin duplicar clases en cada componente; un script en `index.html` lo aplica antes de pintar para evitar el destello blanco.
+- **Paginación:** números de página con elipsis (1 … 4 5 6 … 459), anterior y siguiente, "Mostrando X–Y de Z" y tamaño de página 10, 25, 50 o 100.
 - **Estado en la URL:** la paginación y los filtros viven en query params, así que un link compartido abre la misma vista.
 
 ## Correr en local

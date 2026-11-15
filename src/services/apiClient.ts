@@ -35,13 +35,27 @@ async function refreshAccessToken(): Promise<string> {
   return data.accessToken
 }
 
-type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean }
+type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean; _attempt?: number }
+
+// Errores recuperables: sin respuesta (red caída, timeout) o 5xx. Solo se reintentan los GET,
+// porque repetir un POST o un DELETE podría duplicar o borrar dos veces.
+const MAX_RETRIES = 2
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const original = error.config as RetriableConfig | undefined
     const isAuthCall = AUTH_PATHS.some((path) => original?.url?.startsWith(path))
+    const status = error.response?.status
+    const isRecoverable = !axios.isCancel(error) && (status === undefined || status >= 500)
+    const isIdempotent = (original?.method ?? 'get').toLowerCase() === 'get'
+
+    if (original && isRecoverable && isIdempotent && (original._attempt ?? 0) < MAX_RETRIES) {
+      original._attempt = (original._attempt ?? 0) + 1
+      await wait(500 * 2 ** (original._attempt - 1)) // 500 ms y luego 1 s (backoff exponencial)
+      if (!original.signal?.aborted) return apiClient(original)
+    }
 
     if (error.response?.status === 401 && original && !original._retry && !isAuthCall) {
       original._retry = true
