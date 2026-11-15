@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import FullPageLoader from '../components/FullPageLoader'
 import { useAuth } from '../hooks/useAuth'
+import ThemeToggle from '../components/ThemeToggle'
 
 export default function AuthLayout() {
   const { isAuthenticated, isRestoring } = useAuth()
@@ -21,7 +22,10 @@ export default function AuthLayout() {
         </div>
         <span className="text-xs text-brand-100">CS 2031 · UTEC</span>
       </aside>
-      <main className="flex items-center justify-center p-6">
+      <main className="relative flex items-center justify-center p-6">
+        <div className="absolute right-4 top-4">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-sm">
           <Outlet />
         </div>

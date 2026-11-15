@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Pencil, RotateCw, Search, X } from 'lucide-react'
+import { Check, Pencil, Plus, RotateCw, Search, X } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Breadcrumbs from '../components/Breadcrumbs'
@@ -23,6 +23,8 @@ export default function AntibioticsPage() {
   const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const debouncedSearch = useDebouncedValue(search, 300)
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const { showToast } = useToast()
 
   const { data, error, isLoading, reload } = useFetch((signal) => catalogService.antibiotics(signal), [])
 
@@ -42,10 +44,35 @@ export default function AntibioticsPage() {
   return (
     <section className="space-y-6">
       <Breadcrumbs items={[{ label: 'Panel', to: '/dashboard' }, { label: 'Antibióticos' }]} />
-      <header>
-        <h1 className="text-2xl font-semibold">Antibióticos</h1>
-        <p className="text-sm text-slate-500">Catálogo usado en los antibiogramas. Solo los administradores pueden editarlo.</p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Antibióticos</h1>
+          <p className="text-sm text-slate-500">Catálogo usado en los antibiogramas. Solo los administradores pueden editarlo.</p>
+        </div>
+        {!isCreating && (
+          <Button onClick={() => setIsCreating(true)} disabled={editingId !== null}>
+            <Plus size={16} aria-hidden />
+            Nuevo antibiótico
+          </Button>
+        )}
       </header>
+
+      {isCreating && (
+        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-brand-200">
+          <h2 className="mb-3 font-semibold">Nuevo antibiótico</h2>
+          <AntibioticForm
+            initial={{ code: '', name: '', antibioticClass: '' }}
+            submitLabel="Crear"
+            onCancel={() => setIsCreating(false)}
+            onSubmit={async (input) => {
+              await catalogService.createAntibiotic(input)
+              showToast(`Se creó ${input.name}`, 'success')
+              setIsCreating(false)
+              reload()
+            }}
+          />
+        </div>
+      )}
 
       <label className="relative block max-w-sm">
         <span className="sr-only">Buscar antibiótico</span>
@@ -137,31 +164,61 @@ interface EditRowProps {
   onSaved: () => void
 }
 
+function EditRow({ antibiotic, onCancel, onSaved }: EditRowProps) {
+  const { showToast } = useToast()
+
+  // PUT reemplaza el recurso completo: mandamos los tres campos aunque solo cambie uno.
+  async function update(input: AntibioticInput) {
+    await catalogService.updateAntibiotic(antibiotic.id, input)
+    showToast(`Se actualizó ${input.name}`, 'success')
+    onSaved()
+  }
+
+  return (
+    <tr className="bg-brand-50/40">
+      <td colSpan={4} className="px-4 py-4">
+        <AntibioticForm
+          initial={{ code: antibiotic.code, name: antibiotic.name, antibioticClass: antibiotic.antibioticClass ?? '' }}
+          submitLabel="Guardar"
+          onSubmit={update}
+          onCancel={onCancel}
+        />
+      </td>
+    </tr>
+  )
+}
+
 const VALIDATORS = {
   code: required('El código es obligatorio'),
   name: required('El nombre es obligatorio'),
 }
 
-function EditRow({ antibiotic, onCancel, onSaved }: EditRowProps) {
+interface AntibioticFormProps {
+  initial: AntibioticInput
+  submitLabel: string
+  onSubmit: (input: AntibioticInput) => Promise<void>
+  onCancel: () => void
+}
+
+/** Formulario compartido por la creación (POST) y la edición (PUT). */
+function AntibioticForm({ initial, submitLabel, onSubmit, onCancel }: AntibioticFormProps) {
   const { showToast } = useToast()
   const [isSaving, setIsSaving] = useState(false)
   const { values, errors, handleChange, handleSubmit, setServerErrors } = useForm<AntibioticInput & Record<string, string>>(
-    { code: antibiotic.code, name: antibiotic.name, antibioticClass: antibiotic.antibioticClass ?? '' },
+    { ...initial },
     VALIDATORS,
   )
 
-  // PUT reemplaza el recurso completo: mandamos los tres campos aunque solo cambie uno.
   const save = handleSubmit(async (input) => {
     setIsSaving(true)
     try {
-      await catalogService.updateAntibiotic(antibiotic.id, {
+      await onSubmit({
         code: input.code.trim().toUpperCase(),
         name: input.name.trim(),
         antibioticClass: input.antibioticClass.trim(),
       })
-      showToast(`Se actualizó ${input.name.trim()}`, 'success')
-      onSaved()
     } catch (err) {
+      // 409: el código ya existe. Lo mostramos en el campo, no como aviso general.
       const apiError = toApiError(err)
       if (apiError.status === 409) setServerErrors({ code: apiError.message })
       else showToast(apiError.message, 'error')
@@ -170,30 +227,26 @@ function EditRow({ antibiotic, onCancel, onSaved }: EditRowProps) {
   })
 
   return (
-    <tr className="bg-brand-50/40">
-      <td colSpan={4} className="px-4 py-4">
-        <form onSubmit={save} className="grid items-start gap-3 sm:grid-cols-[8rem_1fr_1fr_auto]" noValidate>
-          <TextField label="Código" name="code" value={values.code} onChange={handleChange} error={errors.code} />
-          <TextField label="Nombre" name="name" value={values.name} onChange={handleChange} error={errors.name} />
-          <TextField
-            label="Clase"
-            name="antibioticClass"
-            value={values.antibioticClass}
-            onChange={handleChange}
-            hint="Opcional, por ejemplo “Cefalosporina”"
-          />
-          <div className="flex gap-2 sm:pt-6">
-            <Button type="submit" isLoading={isSaving}>
-              {!isSaving && <Check size={16} aria-hidden />}
-              Guardar
-            </Button>
-            <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
-              <X size={16} aria-hidden />
-              Cancelar
-            </Button>
-          </div>
-        </form>
-      </td>
-    </tr>
+    <form onSubmit={save} className="grid items-start gap-3 sm:grid-cols-[8rem_1fr_1fr_auto]" noValidate>
+      <TextField label="Código" name="code" value={values.code} onChange={handleChange} error={errors.code} placeholder="CRO" />
+      <TextField label="Nombre" name="name" value={values.name} onChange={handleChange} error={errors.name} placeholder="Ceftriaxona" />
+      <TextField
+        label="Clase"
+        name="antibioticClass"
+        value={values.antibioticClass}
+        onChange={handleChange}
+        hint="Opcional, por ejemplo “Cefalosporina”"
+      />
+      <div className="flex gap-2 sm:pt-6">
+        <Button type="submit" isLoading={isSaving}>
+          {!isSaving && <Check size={16} aria-hidden />}
+          {submitLabel}
+        </Button>
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
+          <X size={16} aria-hidden />
+          Cancelar
+        </Button>
+      </div>
+    </form>
   )
 }

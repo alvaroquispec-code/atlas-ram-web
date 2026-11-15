@@ -1,6 +1,7 @@
 import { FlaskConical, LayoutDashboard, LogOut, Pill, Users } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import Button from '../components/Button'
+import ThemeToggle from '../components/ThemeToggle'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { useAuth } from '../hooks/useAuth'
 
@@ -33,7 +34,8 @@ export default function AppLayout() {
             {/* Escritorio y tablet: menú en la misma fila */}
             <nav className="hidden gap-1 sm:flex">{links}</nav>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <span className="hidden whitespace-nowrap text-sm text-slate-600 lg:inline">{user?.fullName}</span>
             <Button variant="ghost" onClick={logout} className="whitespace-nowrap">
               <LogOut size={16} aria-hidden />

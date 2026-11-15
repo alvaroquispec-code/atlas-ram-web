@@ -13,7 +13,7 @@ import { isolateService, type IsolateSort } from '../services/isolateService'
 import type { Specimen } from '../types/api'
 import { formatDate, SPECIMEN_LABELS } from '../utils/labels'
 
-const DEFAULT_SIZE = 20
+const DEFAULT_SIZE = 25
 const DEFAULT_SORT: IsolateSort = 'collectionDate,desc'
 const FILTER_KEYS = ['facilityId', 'microorganismId', 'specimen'] as const
 
@@ -100,7 +100,7 @@ export default function IsolatesPage() {
                 goToError ? 'border-red-400 focus:ring-red-100' : 'border-slate-300 focus:border-brand-500 focus:ring-brand-100'
               }`}
             />
-            <Button type="submit" variant="secondary" aria-label="Ir al aislamiento">
+            <Button type="submit" variant="secondary" aria-label="Ir al aislamiento" title="Abrir el detalle de ese número">
               <ArrowRight size={16} aria-hidden />
             </Button>
           </div>

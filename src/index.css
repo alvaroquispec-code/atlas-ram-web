@@ -12,3 +12,54 @@
 body {
   @apply bg-slate-50 text-slate-800 antialiased;
 }
+
+/* ---------------------------------------------------------------------------
+   Modo oscuro. Se activa con la clase .dark en <html> (ver hooks/useTheme.ts).
+   En vez de escribir dark: en cada componente, redefinimos la escala slate:
+   Tailwind 4 pinta con variables CSS, así que toda la interfaz cambia de una vez.
+   Los colores de acento (rojo, verde, ámbar, marca) se ajustan clase por clase
+   para que no cambien los botones sólidos, que siguen con texto blanco.
+   --------------------------------------------------------------------------- */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  color-scheme: dark;
+  --color-slate-50: #0b1120;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #2c3a50;
+  --color-slate-300: #475569;
+  --color-slate-400: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
+  --color-brand-50: #13284a;
+  --color-brand-100: #1d3a66;
+}
+
+/* Superficies */
+.dark .bg-white { background-color: #111a2e; }
+.dark .bg-white\/90 { background-color: rgb(17 26 46 / 0.9); }
+.dark .bg-brand-50\/40 { background-color: rgb(29 58 102 / 0.35); }
+.dark .bg-slate-800 { background-color: #334155; }
+
+/* Texto de marca legible sobre fondo oscuro */
+.dark .text-brand-600,
+.dark .text-brand-700 { color: #7cb4f0; }
+.dark .text-brand-100 { color: #d9eaff; }
+
+/* Avisos e insignias: fondos tenues y texto claro */
+.dark .bg-red-50 { background-color: rgb(127 29 29 / 0.35); }
+.dark .bg-emerald-50 { background-color: rgb(6 78 59 / 0.4); }
+.dark .bg-amber-50 { background-color: rgb(120 53 15 / 0.4); }
+.dark .text-red-600 { color: #f87171; }
+.dark .text-red-700,
+.dark .text-red-800 { color: #fecaca; }
+.dark .text-emerald-700 { color: #6ee7b7; }
+.dark .text-amber-700,
+.dark .text-amber-800 { color: #fde68a; }
+.dark .ring-red-200 { --tw-ring-color: rgb(153 27 27 / 0.6); }
+.dark .ring-emerald-200 { --tw-ring-color: rgb(6 95 70 / 0.6); }
+.dark .ring-amber-200 { --tw-ring-color: rgb(146 64 14 / 0.6); }
+.dark .ring-brand-200 { --tw-ring-color: #2b6cb0; }
