@@ -169,7 +169,7 @@ function EditRow({ antibiotic, onCancel, onSaved }: EditRowProps) {
 
   // PUT reemplaza el recurso completo: mandamos los tres campos aunque solo cambie uno.
   async function update(input: AntibioticInput) {
-    await catalogService.updateAntibiotic(antibiotic.id, input)
+    await catalogService.updateAntibiotic(antibiotic.id, input, antibiotic.awareCategory)
     showToast(`Se actualizó ${input.name}`, 'success')
     onSaved()
   }
