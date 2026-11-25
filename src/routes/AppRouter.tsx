@@ -18,6 +18,7 @@ const WiscaPage = lazy(() => import('../pages/WiscaPage'))
 const UploadPage = lazy(() => import('../pages/UploadPage'))
 const AlertsPage = lazy(() => import('../pages/AlertsPage'))
 const InventoryPage = lazy(() => import('../pages/InventoryPage'))
+const AccountPage = lazy(() => import('../pages/AccountPage'))
 const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 
@@ -98,6 +99,7 @@ export default function AppRouter() {
               </PrivateRoute>
             }
           />
+          <Route path="/account" element={<AccountPage />} />
           <Route path="/forbidden" element={<ForbiddenPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

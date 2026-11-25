@@ -12,6 +12,12 @@ export const userService = {
     return data
   },
 
+  /** El administrador asigna una contraseña nueva; el servidor cierra las sesiones abiertas de ese usuario. */
+  async resetPassword(id: number, newPassword: string) {
+    const { data } = await apiClient.put<User>(`/users/${id}/password`, { newPassword })
+    return data
+  },
+
   async setActive(id: number, active: boolean) {
     const { data } = await apiClient.patch<User>(`/users/${id}/active`, null, { params: { active } })
     return data

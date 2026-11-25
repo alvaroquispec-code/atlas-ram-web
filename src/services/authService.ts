@@ -42,6 +42,21 @@ export const authService = {
     return data
   },
 
+  /** Cambia la contraseña; el servidor cierra las demás sesiones y devuelve tokens nuevos para esta. */
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const { data } = await apiClient.put<AuthResponse>('/auth/me/password', { currentPassword, newPassword })
+    storeTokens(data)
+  },
+
+  /** Invalida todos los tokens del usuario en el servidor, incluido el de esta pestaña. */
+  async logoutAll(): Promise<void> {
+    try {
+      await apiClient.post('/auth/me/logout-all')
+    } finally {
+      tokenStorage.clear()
+    }
+  },
+
   logout() {
     tokenStorage.clear()
   },
