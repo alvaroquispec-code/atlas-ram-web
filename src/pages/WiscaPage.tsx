@@ -4,6 +4,7 @@ import Alert from '../components/Alert'
 import Button from '../components/Button'
 import CiBar from '../components/CiBar'
 import SelectField from '../components/SelectField'
+import StandardsNote from '../components/StandardsNote'
 import Spinner from '../components/Spinner'
 import TextField from '../components/TextField'
 import { useFetch } from '../hooks/useFetch'
@@ -177,6 +178,7 @@ export default function WiscaPage() {
               ))}
             </ul>
           </div>
+          <StandardsNote withExpectedPhenotypes />
         </>
       ) : null}
     </section>
