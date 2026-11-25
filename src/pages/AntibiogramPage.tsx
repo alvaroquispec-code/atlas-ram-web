@@ -5,6 +5,7 @@ import Button from '../components/Button'
 import CiBar from '../components/CiBar'
 import DataOriginNotice from '../components/DataOriginNotice'
 import SelectField from '../components/SelectField'
+import StandardsNote from '../components/StandardsNote'
 import Spinner from '../components/Spinner'
 import TextField from '../components/TextField'
 import { useFetch } from '../hooks/useFetch'
@@ -70,6 +71,7 @@ export default function AntibiogramPage() {
           Cada CIM se interpreta con los puntos de corte del CLSI M100 y los resultados se acumulan según el CLSI M39: solo el primer aislamiento de cada paciente y especie en el periodo,
           con su intervalo de confianza de Wilson al 95 %.
         </p>
+        <StandardsNote />
       </header>
 
       <div className="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-5">

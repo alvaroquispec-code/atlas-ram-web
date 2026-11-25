@@ -130,13 +130,13 @@ export default function AlertsPage() {
               </div>
               <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
                 <div>
-                  <p className="text-xs text-slate-500">Últimas 4 semanas</p>
+                  <p className="text-xs text-slate-500">Ventana de 4 semanas</p>
                   <p className="text-lg font-semibold text-red-700">
                     {a.observedPercentage.toFixed(0)} % <span className="text-sm font-normal text-slate-500">({a.resistantCount} de {a.testedCount})</span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Línea base (12 meses previos)</p>
+                  <p className="text-xs text-slate-500">Línea base (12 meses antes de la ventana)</p>
                   <p className="text-lg font-semibold">
                     {a.baselinePercentage.toFixed(0)} % <span className="text-sm font-normal text-slate-500">({a.baselineResistant} de {a.baselineTested})</span>
                   </p>

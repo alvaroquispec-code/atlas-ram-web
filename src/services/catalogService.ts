@@ -1,10 +1,15 @@
-import type { Antibiotic, AntibioticInput, Facility, Microorganism, Page } from '../types/api'
+import type { Antibiotic, AntibioticInput, Facility, Microorganism, Page, Standards } from '../types/api'
 import { apiClient } from './apiClient'
 
 // Los catálogos son cortos (8 microorganismos, ~20 antibióticos): los pedimos en una sola página.
 const ALL = { size: 100 }
 
 export const catalogService = {
+  async standards(signal?: AbortSignal) {
+    const { data } = await apiClient.get<Standards>('/standards', { signal })
+    return data
+  },
+
   async microorganisms(signal?: AbortSignal) {
     const { data } = await apiClient.get<Page<Microorganism>>('/microorganisms', { params: ALL, signal })
     return data.content
