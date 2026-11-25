@@ -65,7 +65,7 @@ export default function InventoryPage() {
         <h1 className="text-2xl font-semibold">Inventario de antibióticos</h1>
         <p className="text-sm text-slate-500">
           Disponibilidad con los indicadores del SISMED, pedido sugerido por una política (R, S) con stock de seguridad
-          por bootstrap, unidades que vencerán sin usarse y presión de brote: alertas activas que harán subir el consumo
+          por bootstrap (nunca menor al 10 % del consumo esperado), unidades que vencerán sin usarse y presión de brote: alertas activas que harán subir el consumo
           de un fármaco que todavía funciona.
         </p>
       </header>
@@ -157,7 +157,9 @@ export default function InventoryPage() {
                     <td className="px-3 py-2 text-right tabular-nums">
                       {i.suggestedOrder === null ? '—' : i.suggestedOrder > 0 ? <strong>{i.suggestedOrder.toLocaleString('es-PE')}</strong> : '0'}
                       {i.suggestedOrder !== null && i.suggestedOrder > 0 && (
-                        <p className="text-xs text-slate-500">servicio {(i.serviceLevel * 100).toFixed(0)} %</p>
+                        <p className="text-xs text-slate-500">
+                          servicio {(i.serviceLevel * 100).toFixed(0)} %{i.safetyFloorApplied && ' · colchón mín. 10 %'}
+                        </p>
                       )}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">

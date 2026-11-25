@@ -268,6 +268,7 @@ export interface StockItemStatus {
   serviceLevel: number
   expectedProtectionDemand: number | null
   safetyStock: number | null
+  safetyFloorApplied: boolean
   orderUpTo: number | null
   inventoryPosition: number
   suggestedOrder: number | null

@@ -41,7 +41,7 @@ export default function AlertsPage() {
     setIsReplaying(true)
     try {
       const detected = await alertService.replay(Number(replayFacility), replayFrom, replayTo)
-      showToast(detected.length > 0 ? `${detected.length} alerta(s) detectada(s)` : 'Sin señales en ese periodo', 'success')
+      showToast(detected.length > 0 ? `${detected.length} alerta(s) nueva(s)` : 'No hay alertas nuevas en ese periodo; las ya abiertas siguen en la lista', 'success')
       alerts.reload()
     } catch (e) {
       showToast(toApiError(e).message, 'error')

@@ -65,9 +65,9 @@ export default function AntibiogramPage() {
   return (
     <section className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Antibiograma acumulado</h1>
+        <h1 className="text-2xl font-semibold">Antibiograma acumulado <span className="font-normal text-slate-500">(mapa microbiológico)</span></h1>
         <p className="text-sm text-slate-500">
-          Porcentaje de sensibles según CLSI M39: solo el primer aislamiento de cada paciente y especie en el periodo,
+          Cada CIM se interpreta con los puntos de corte del CLSI M100 y los resultados se acumulan según el CLSI M39: solo el primer aislamiento de cada paciente y especie en el periodo,
           con su intervalo de confianza de Wilson al 95 %.
         </p>
       </header>

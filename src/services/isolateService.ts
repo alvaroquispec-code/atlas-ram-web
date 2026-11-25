@@ -35,4 +35,13 @@ export const isolateService = {
     const { data } = await apiClient.get<SusceptibilityResult[]>(`/isolates/${id}/results`, { signal })
     return data
   },
+
+  /** El aislamiento y su antibiograma en HL7 FHIR R4 (LOINC y SNOMED CT), para otros sistemas del hospital. */
+  async fhirBundle(id: number) {
+    const { data } = await apiClient.get<unknown>(`/fhir/isolates/${id}`, {
+      headers: { Accept: 'application/fhir+json' },
+      responseType: 'json',
+    })
+    return data
+  },
 }
