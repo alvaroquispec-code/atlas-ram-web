@@ -18,6 +18,10 @@ export interface AuthContextValue {
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
+// Cada cuánto se verifica que la sesión siga vigente mientras la pestaña está visible. Si se cerró desde
+// otro dispositivo (o se cambió la contraseña), /auth/me responde 401, el refresh falla y se vuelve al login.
+const SESSION_CHECK_MS = 30_000
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isRestoring, setIsRestoring] = useState(true)
@@ -43,6 +47,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => authService.logout())
       .finally(() => setIsRestoring(false))
   }, [])
+
+  // Verificación de sesión: al volver a la pestaña y cada 30 s mientras está visible.
+  const isLoggedIn = !!user
+  useEffect(() => {
+    if (!isLoggedIn) return
+    const check = () => {
+      if (document.visibilityState === 'visible') authService.me().catch(() => {})
+    }
+    const timer = window.setInterval(check, SESSION_CHECK_MS)
+    document.addEventListener('visibilitychange', check)
+    window.addEventListener('focus', check)
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', check)
+      window.removeEventListener('focus', check)
+    }
+  }, [isLoggedIn])
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     setUser(await authService.login(credentials))
