@@ -1,5 +1,6 @@
 import { Upload } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
 import SelectField from '../components/SelectField'
@@ -59,7 +60,8 @@ export default function UploadPage() {
         <h1 className="text-2xl font-semibold">Cargar resultados</h1>
         <p className="text-sm text-slate-500">
           Sube el archivo que exporta tu laboratorio: el CSV de Atlas RAM o la exportación de WHONET (una columna por
-          antibiótico), que se reconoce sola. Cada fila con errores se informa sin detener la carga.
+          antibiótico), que se reconoce sola. Cada fila con errores se informa sin detener la carga. ¿Es un solo paciente?{' '}
+          <Link to="/isolates/new" className="text-brand-600 underline">Regístralo aquí</Link>.
         </p>
       </header>
 

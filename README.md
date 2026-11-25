@@ -38,6 +38,7 @@ React 19 · TypeScript · Vite · Tailwind CSS 4 · React Router 7 · Axios · L
 | `/inventory` | Inventario de antibióticos: estado SISMED, pedido sugerido (R, S), unidades por vencer, presión de brote y consumo DDD por 100 camas-día según AWaRe | Farmacéutico, epidemiólogo, admin |
 | `/uploads` | Carga de CSV o exportación WHONET, con procedencia (real o sintética) y seguimiento del procesamiento | ADMIN o LAB_TECHNICIAN |
 | `/isolates?page&size&sort&facilityId&microorganismId&specimen` | Aislamientos paginados con filtros combinables, orden por fecha y acceso directo por número | Autenticado |
+| `/isolates/new` | Registrar **un paciente** con su antibiograma (CIM como la informa el equipo, halo o S/I/R por antibiótico); sexo, edad y servicio obligatorios (variables mínimas del INS). El aislamiento y sus resultados se guardan juntos | ADMIN o LAB_TECHNICIAN |
 | `/isolates/:id` | Detalle del aislamiento con su antibiograma (CIM, halo, interpretación CLSI); un ADMIN puede eliminarlo (`DELETE`) con confirmación | Autenticado |
 | `/antibiotics?q=` | Catálogo de antibióticos: búsqueda con debounce (en query param) y creación con `POST /antibiotics` y edición en línea con `PUT /antibiotics/{id}` | Solo ADMIN |
 | `/breakpoints` | Ediciones de puntos de corte cargadas y vista previa de cuántos resultados cambiarían si se reinterpretara el histórico con otra edición | Solo ADMIN |

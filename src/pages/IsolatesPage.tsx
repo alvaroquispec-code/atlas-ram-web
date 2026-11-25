@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { ArrowRight, FilterX, RotateCw } from 'lucide-react'
+import { ArrowRight, FilterX, Plus, RotateCw } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Breadcrumbs from '../components/Breadcrumbs'
@@ -7,6 +7,7 @@ import Button from '../components/Button'
 import Pagination from '../components/Pagination'
 import SelectField from '../components/SelectField'
 import Spinner from '../components/Spinner'
+import { useAuth } from '../hooks/useAuth'
 import { useFetch } from '../hooks/useFetch'
 import { catalogService, microorganismLabel } from '../services/catalogService'
 import { isolateService, type IsolateSort } from '../services/isolateService'
@@ -18,6 +19,8 @@ const DEFAULT_SORT: IsolateSort = 'collectionDate,desc'
 const FILTER_KEYS = ['facilityId', 'microorganismId', 'specimen'] as const
 
 export default function IsolatesPage() {
+  const { hasRole } = useAuth()
+  const canRegister = hasRole('ADMIN', 'LAB_TECHNICIAN')
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   // Todo el estado del listado vive en la URL: /isolates?page=2&size=50&microorganismId=3&sort=collectionDate,asc
@@ -79,6 +82,17 @@ export default function IsolatesPage() {
         <div>
           <h1 className="text-2xl font-semibold">Aislamientos</h1>
           <p className="text-sm text-slate-500">Muestras registradas por los laboratorios.</p>
+          {canRegister && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link to="/isolates/new" className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700">
+                <Plus size={16} aria-hidden />
+                Registrar un paciente
+              </Link>
+              <Link to="/uploads" className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-700 ring-1 ring-brand-100 hover:bg-brand-50">
+                Cargar archivo (CSV o WHONET)
+              </Link>
+            </div>
+          )}
         </div>
         <form onSubmit={handleGoTo} className="flex flex-col gap-1" noValidate>
           <label htmlFor="go-to-id" className="text-sm font-medium text-slate-700">

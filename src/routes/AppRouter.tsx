@@ -16,6 +16,7 @@ const AntibiogramPage = lazy(() => import('../pages/AntibiogramPage'))
 const TrendPage = lazy(() => import('../pages/TrendPage'))
 const WiscaPage = lazy(() => import('../pages/WiscaPage'))
 const UploadPage = lazy(() => import('../pages/UploadPage'))
+const NewIsolatePage = lazy(() => import('../pages/NewIsolatePage'))
 const AlertsPage = lazy(() => import('../pages/AlertsPage'))
 const InventoryPage = lazy(() => import('../pages/InventoryPage'))
 const BreakpointsPage = lazy(() => import('../pages/BreakpointsPage'))
@@ -77,6 +78,14 @@ export default function AppRouter() {
             }
           />
           <Route
+            path="/isolates/new"
+            element={
+              <PrivateRoute roles={['ADMIN', 'LAB_TECHNICIAN']}>
+                <NewIsolatePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/isolates/:id"
             element={
               <PrivateRoute roles={['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST']}>
@@ -115,4 +124,4 @@ export default function AppRouter() {
       </Routes>
     </Suspense>
   )
-}
+}

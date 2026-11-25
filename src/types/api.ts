@@ -229,6 +229,25 @@ export interface DataUpload {
   completeness?: DataCompleteness | null
 }
 
+/** Registro de un paciente con su antibiograma (POST /isolates). */
+export interface CreateIsolatePayload {
+  collectionDate: string
+  specimenType: Specimen
+  microorganismId: number
+  facilityId: number
+  patientAge: number
+  patientSex: 'M' | 'F'
+  ward: Ward
+  dataOrigin: DataOrigin
+  results: {
+    antibioticId: number
+    /** Como la informa el equipo: "<=0.25", "2", ">=16". */
+    mic?: string
+    diskMm?: number
+    reportedInterpretation?: Interpretation
+  }[]
+}
+
 export interface DataCompleteness {
   isolates: number
   sexPercentage: number

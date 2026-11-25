@@ -1,4 +1,4 @@
-import type { Isolate, Page, Specimen, SusceptibilityResult } from '../types/api'
+import type { CreateIsolatePayload, Isolate, Page, Specimen, SusceptibilityResult } from '../types/api'
 import { apiClient } from './apiClient'
 
 export type IsolateSort = 'collectionDate,desc' | 'collectionDate,asc'
@@ -24,6 +24,12 @@ export const isolateService = {
 
   async findById(id: number, signal?: AbortSignal) {
     const { data } = await apiClient.get<Isolate>(`/isolates/${id}`, { signal })
+    return data
+  },
+
+  /** Un paciente con su antibiograma, en una sola transacción. */
+  async create(payload: CreateIsolatePayload) {
+    const { data } = await apiClient.post<Isolate>('/isolates', payload)
     return data
   },
 
