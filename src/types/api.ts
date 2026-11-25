@@ -326,3 +326,22 @@ export interface Standards {
   aggregation: string
   expectedPhenotypes: string
 }
+
+/** Edición de puntos de corte cargada (GET /breakpoints/editions). */
+export interface BreakpointEdition {
+  standard: string
+  version: string
+  breakpoints: number
+  active: boolean
+}
+
+/** Resultado de reinterpretar el histórico con una edición (POST /breakpoints/reinterpret). */
+export interface ReinterpretationReport {
+  standard: string
+  version: string
+  applied: boolean
+  evaluated: number
+  changed: number
+  withoutBreakpoint: number
+  changes: { microorganism: string; antibiotic: string; from: string; to: string; count: number }[]
+}
