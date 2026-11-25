@@ -63,7 +63,7 @@ export default function UploadPage() {
         </p>
       </header>
 
-      <form onSubmit={submit} className="grid gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2">
+      <form onSubmit={submit} className="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2">
         <SelectField
           label="Establecimiento"
           value={selectedFacility}
@@ -115,7 +115,7 @@ export default function UploadPage() {
           {!FINISHED.includes(upload.status) ? (
             <Spinner label="Procesando en segundo plano" />
           ) : (
-            <dl className="grid gap-4 sm:grid-cols-4">
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-4">
               <Stat label="Filas" value={upload.totalRows} />
               <Stat label="Cargadas" value={upload.processedRows} />
               <Stat label="Con errores" value={upload.failedRows} />

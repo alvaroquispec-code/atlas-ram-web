@@ -31,9 +31,10 @@ export default function Pagination({
       <span>
         Mostrando {from}–{to} de {totalElements} · página {totalPages === 0 ? 0 : page + 1} de {totalPages}
       </span>
-      <div className="flex items-center gap-2">
+      {/* En pantallas angostas la fila se parte en dos líneas en vez de ensanchar la página. */}
+      <div className="flex flex-wrap items-center gap-2">
         <label className="flex items-center gap-2">
-          Por página
+          <span className="sr-only sm:not-sr-only">Por página</span>
           <select
             value={size}
             onChange={(e) => onSizeChange(Number(e.target.value))}
@@ -48,7 +49,7 @@ export default function Pagination({
         </label>
         <Button variant="secondary" disabled={isFirst} onClick={() => onPageChange(page - 1)}>
           <ChevronLeft size={16} aria-hidden />
-          Anterior
+          <span className="sr-only sm:not-sr-only">Anterior</span>
         </Button>
         <nav aria-label="Páginas" className="flex items-center gap-1">
           {pages.map((item, index) =>
@@ -72,7 +73,7 @@ export default function Pagination({
           )}
         </nav>
         <Button variant="secondary" disabled={isLast} onClick={() => onPageChange(page + 1)}>
-          Siguiente
+          <span className="sr-only sm:not-sr-only">Siguiente</span>
           <ChevronRight size={16} aria-hidden />
         </Button>
       </div>
