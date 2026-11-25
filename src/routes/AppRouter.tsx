@@ -44,7 +44,7 @@ export default function AppRouter() {
           <Route
             path="/alerts"
             element={
-              <PrivateRoute roles={['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST']}>
+              <PrivateRoute roles={['ADMIN', 'EPIDEMIOLOGIST']}>
                 <AlertsPage />
               </PrivateRoute>
             }
@@ -65,8 +65,23 @@ export default function AppRouter() {
               </PrivateRoute>
             }
           />
-          <Route path="/isolates" element={<IsolatesPage />} />
-          <Route path="/isolates/:id" element={<IsolateDetailPage />} />
+          {/* Datos por aislamiento: solo los roles que el servidor autoriza en GET /isolates/** */}
+          <Route
+            path="/isolates"
+            element={
+              <PrivateRoute roles={['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST']}>
+                <IsolatesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/isolates/:id"
+            element={
+              <PrivateRoute roles={['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST']}>
+                <IsolateDetailPage />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/users"
             element={
