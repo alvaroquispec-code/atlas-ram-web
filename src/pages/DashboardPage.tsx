@@ -64,7 +64,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <div className="grid gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-4">
         <SelectField
           label="Microorganismo"
           value={filters.microorganismId}
@@ -99,7 +99,7 @@ export default function DashboardPage() {
         </Alert>
       ) : (
         <>
-          <dl className="grid gap-4 sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Stat label="Resistencia global" value={overall === null ? '—' : `${overall.toFixed(1)} %`} />
             <Stat label="Distritos con datos suficientes" value={`${withData.length} de ${districts.length}`} />
             <Stat

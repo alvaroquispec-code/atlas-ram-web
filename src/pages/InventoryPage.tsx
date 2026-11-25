@@ -95,7 +95,7 @@ export default function InventoryPage() {
         <>
           <Alert tone="warning">Inventario sintético de demostración: consumos, costos y camas son ilustrativos.</Alert>
 
-          <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label="Ítems por pedir" value={`${data.itemsToOrder}`} hint={soles(data.suggestedOrderValue)} />
             <Stat label="Unidades que vencerán sin usarse" value={soles(data.valueAtRiskOfExpiry)} hint={`${data.itemsWithExpiryRisk} ítems`} />
             <Stat label="Bajo presión de brote" value={`${data.itemsUnderOutbreakPressure}`} hint={`${data.activeAlerts} alerta(s) activa(s)`} danger={data.itemsUnderOutbreakPressure > 0} />
