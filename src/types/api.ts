@@ -225,6 +225,15 @@ export interface DataUpload {
   revertedBy: string | null
   revertReason: string | null
   dataOrigin: DataOrigin
+  /** Variables mínimas obligatorias del INS presentes en los aislamientos de la carga (solo en GET /uploads/{id}). */
+  completeness?: DataCompleteness | null
+}
+
+export interface DataCompleteness {
+  isolates: number
+  sexPercentage: number
+  agePercentage: number
+  wardPercentage: number
 }
 
 export type AlertStatus = 'OPEN' | 'ACKNOWLEDGED' | 'CLOSED'

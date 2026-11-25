@@ -6,7 +6,7 @@ import SelectField from '../components/SelectField'
 import Spinner from '../components/Spinner'
 import { useFetch } from '../hooks/useFetch'
 import { uploadService } from '../services/uploadService'
-import type { DataOrigin, DataUpload } from '../types/api'
+import type { DataCompleteness, DataOrigin, DataUpload } from '../types/api'
 import { toApiError } from '../utils/apiError'
 import { ORIGIN_LABELS } from '../utils/labels'
 
@@ -122,6 +122,9 @@ export default function UploadPage() {
               <Stat label="Procedencia" value={upload.dataOrigin === 'REAL' ? 'Real' : 'Sintética'} />
             </dl>
           )}
+          {FINISHED.includes(upload.status) && upload.completeness && upload.completeness.isolates > 0 && (
+            <Completeness c={upload.completeness} />
+          )}
           {errors.length > 0 && (
             <div>
               <p className="mb-1 text-sm font-medium text-slate-700">Filas con errores</p>
@@ -135,6 +138,33 @@ export default function UploadPage() {
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * Sexo, edad y servicio son variables mínimas obligatorias del INS para WHONET-INS. La carga se acepta aunque
+ * falten, pero se muestra cuánto falta para que el laboratorio lo corrija en su exportación.
+ */
+function Completeness({ c }: { c: DataCompleteness }) {
+  const items = [
+    { label: 'Sexo', value: c.sexPercentage },
+    { label: 'Edad', value: c.agePercentage },
+    { label: 'Servicio', value: c.wardPercentage },
+  ]
+  const incomplete = items.some((i) => i.value < 100)
+  return (
+    <div className={`rounded-lg p-3 text-sm ring-1 ${incomplete ? 'bg-amber-50 text-amber-900 ring-amber-200' : 'bg-emerald-50 text-emerald-900 ring-emerald-200'}`}>
+      <p className="font-medium">Variables mínimas obligatorias del INS · {c.isolates} aislamientos</p>
+      <p className="mt-1">
+        {items.map((i) => `${i.label} ${i.value.toFixed(0)} %`).join(' · ')}
+      </p>
+      {incomplete && (
+        <p className="mt-1 text-xs">
+          Los datos se cargaron, pero el INS exige sexo, edad y servicio para la vigilancia nacional (WHONET-INS).
+          Agrega las columnas <code>sexo</code>, <code>edad</code> y <code>servicio</code> en la próxima exportación.
+        </p>
+      )}
+    </div>
   )
 }
 
