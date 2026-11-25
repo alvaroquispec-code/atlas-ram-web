@@ -1,4 +1,4 @@
-import type { AntibiogramEntry, DataOrigin, DistrictResistance, Syndrome, TrendResult, WiscaResult } from '../types/api'
+import type { AntibiogramEntry, BreakpointSite, DataOrigin, DistrictResistance, Syndrome, TrendResult, WiscaResult } from '../types/api'
 import { apiClient } from './apiClient'
 
 export interface ResistanceQuery {
@@ -6,6 +6,7 @@ export interface ResistanceQuery {
   antibioticId: number
   from: string
   to: string
+  site?: BreakpointSite
 }
 
 export interface CumulativeQuery {
@@ -24,6 +25,7 @@ export interface TrendQuery {
   to: string
   interval: 'MONTH' | 'QUARTER'
   origin?: DataOrigin
+  site?: BreakpointSite
 }
 
 export interface WiscaQuery {
@@ -42,7 +44,7 @@ const clean = <T extends object>(params: T) =>
 export const antibiogramService = {
   async byDistrict(query: ResistanceQuery, signal?: AbortSignal) {
     const { data } = await apiClient.get<DistrictResistance[]>('/antibiogram/by-district', {
-      params: query,
+      params: clean(query),
       signal,
     })
     return data

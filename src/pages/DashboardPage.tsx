@@ -4,12 +4,14 @@ import Alert from '../components/Alert'
 import Button from '../components/Button'
 import ResistanceGrid from '../components/ResistanceGrid'
 import SelectField from '../components/SelectField'
+import SiteToggle from '../components/SiteToggle'
 import Spinner from '../components/Spinner'
 import TextField from '../components/TextField'
 import { useAuth } from '../hooks/useAuth'
 import { useFetch } from '../hooks/useFetch'
 import { antibiogramService } from '../services/antibiogramService'
 import { catalogService, microorganismLabel } from '../services/catalogService'
+import type { BreakpointSite } from '../types/api'
 
 // Valores por defecto: E. coli frente a ceftriaxona, en el periodo que cubren los datos.
 const DEFAULTS = { microorganismId: '1', antibioticId: '6', from: '2024-09-01', to: '2026-08-31' }
@@ -26,6 +28,8 @@ export default function DashboardPage() {
     antibioticId: Number(read('antibioticId')),
     from: read('from'),
     to: read('to'),
+    // Solo cuenta en pares con punto de corte por sitio; el servidor usa "no meníngeo" por defecto.
+    site: (searchParams.get('site') ?? undefined) as BreakpointSite | undefined,
   }
 
   const updateFilter = (key: FilterKey, value: string) => {
@@ -40,11 +44,12 @@ export default function DashboardPage() {
   )
   const resistance = useFetch(
     (signal) => antibiogramService.byDistrict(filters, signal),
-    [filters.microorganismId, filters.antibioticId, filters.from, filters.to],
+    [filters.microorganismId, filters.antibioticId, filters.from, filters.to, filters.site],
   )
 
   const [microorganisms, antibiotics] = catalogs.data ?? [[], []]
   const districts = resistance.data ?? []
+  const siteUsed = districts.find((d) => d.breakpointSite)?.breakpointSite ?? null
   const withData = districts.filter((d) => d.sufficientData)
   const totalTested = withData.reduce((sum, d) => sum + d.totalTested, 0)
   const totalResistant = withData.reduce((sum, d) => sum + d.resistantCount, 0)
@@ -82,6 +87,17 @@ export default function DashboardPage() {
         <TextField label="Desde" type="date" value={filters.from} onChange={(e) => updateFilter('from', e.target.value)} />
         <TextField label="Hasta" type="date" value={filters.to} onChange={(e) => updateFilter('to', e.target.value)} />
       </div>
+
+      {siteUsed && (
+        <SiteToggle
+          value={siteUsed}
+          onChange={(site) => {
+            const next = new URLSearchParams(searchParams)
+            next.set('site', site)
+            setSearchParams(next, { replace: true })
+          }}
+        />
+      )}
 
       {catalogs.error && (
         <Alert tone="error" action={<Button variant="ghost" onClick={catalogs.reload}><RotateCw size={16} aria-hidden />Reintentar</Button>}>
@@ -124,4 +140,4 @@ function Stat({ label, value }: { label: string; value: string }) {
       <dd className="mt-1 text-xl font-semibold text-slate-800">{value}</dd>
     </div>
   )
-}
+}

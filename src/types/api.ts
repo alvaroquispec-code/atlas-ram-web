@@ -99,7 +99,11 @@ export interface DistrictResistance {
   resistantCount: number
   resistancePercentage: number | null
   sufficientData: boolean
+  /** Solo en pares con punto de corte por sitio: el que se usó. */
+  breakpointSite?: BreakpointSite | null
 }
+
+export type BreakpointSite = 'MENINGITIS' | 'NON_MENINGITIS'
 
 
 export interface Facility {
@@ -134,7 +138,7 @@ export interface AntibiogramEntry {
   patientIdentifiedPercentage: number
   realDataPercentage: number
   /** Solo en pares con punto de corte por sitio (S. pneumoniae × ceftriaxona/cefepima). */
-  breakpointSite?: 'MENINGITIS' | 'NON_MENINGITIS' | null
+  breakpointSite?: BreakpointSite | null
 }
 
 export interface TrendPoint {
@@ -162,6 +166,7 @@ export interface TrendResult {
     periodsWithData: number
     totalTested: number
   } | null
+  breakpointSite?: BreakpointSite | null
 }
 
 export type Syndrome = 'BACTEREMIA' | 'URINARY' | 'RESPIRATORY' | 'SKIN_SOFT_TISSUE' | 'MENINGITIS'

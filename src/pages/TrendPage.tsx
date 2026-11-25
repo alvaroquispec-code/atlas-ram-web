@@ -3,13 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
 import SelectField from '../components/SelectField'
+import SiteToggle from '../components/SiteToggle'
 import Spinner from '../components/Spinner'
 import TextField from '../components/TextField'
 import TrendChart from '../components/TrendChart'
 import { useFetch } from '../hooks/useFetch'
 import { antibiogramService } from '../services/antibiogramService'
 import { catalogService, microorganismLabel } from '../services/catalogService'
-import type { DataOrigin } from '../types/api'
+import type { BreakpointSite, DataOrigin } from '../types/api'
 import { ORIGIN_LABELS } from '../utils/labels'
 
 // K. pneumoniae frente a meropenem en el Hospital Hipólito Unanue: el ejemplo de tendencia de la demo.
@@ -37,6 +38,7 @@ export default function TrendPage() {
     to: read('to'),
     interval: read('interval') as 'MONTH' | 'QUARTER',
     origin: read('origin') as DataOrigin | '',
+    site: (searchParams.get('site') ?? undefined) as BreakpointSite | undefined,
   }
   const update = (key: FilterKey, value: string) => {
     const next = new URLSearchParams(searchParams)
@@ -64,10 +66,11 @@ export default function TrendPage() {
           to: f.to,
           interval: f.interval,
           origin: f.origin === '' ? undefined : f.origin,
+          site: f.site,
         },
         signal,
       ),
-    [f.microorganismId, f.antibioticId, f.facilityId, f.from, f.to, f.interval, f.origin],
+    [f.microorganismId, f.antibioticId, f.facilityId, f.from, f.to, f.interval, f.origin, f.site],
   )
 
   const [microorganisms, antibiotics, facilities] = catalogs.data ?? [[], [], []]
@@ -126,6 +129,17 @@ export default function TrendPage() {
           ]}
         />
       </div>
+
+      {data?.breakpointSite && (
+        <SiteToggle
+          value={data.breakpointSite}
+          onChange={(site) => {
+            const next = new URLSearchParams(searchParams)
+            next.set('site', site)
+            setSearchParams(next, { replace: true })
+          }}
+        />
+      )}
 
       {result.isLoading ? (
         <div className="py-16">
