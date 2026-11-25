@@ -156,7 +156,7 @@ export default function NewIsolatePage() {
           <p className="mb-3 text-xs text-slate-500">
             Completa solo los antibióticos probados. La CIM se escribe como la informa el equipo (≤0,25 · 2 · ≥16) y se
             interpreta con el punto de corte CLSI vigente; la interpretación del laboratorio solo se usa si la CIM o el
-            halo no bastan. {filledCount} con resultado.
+            halo no bastan. Usa CIM o halo (difusión en disco), no ambos. {filledCount} con resultado.
           </p>
           {errors.results && <p className="mb-2 text-sm text-red-600">{errors.results}</p>}
           <div className="overflow-x-auto">
@@ -164,8 +164,8 @@ export default function NewIsolatePage() {
               <thead className="text-left text-xs uppercase text-slate-500">
                 <tr>
                   <th className="py-2 pr-4">Antibiótico</th>
-                  <th className="py-2 pr-4">CIM (µg/mL)</th>
-                  <th className="py-2 pr-4">Halo (mm)</th>
+                  <th className="py-2 pr-4">CIM <span className="normal-case">(µg/mL)</span></th>
+                  <th className="py-2 pr-4" title="Difusión en disco: diámetro de la zona de inhibición">Halo <span className="normal-case">(mm, disco)</span></th>
                   <th className="py-2">Interpretación del laboratorio</th>
                 </tr>
               </thead>
