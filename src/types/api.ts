@@ -133,6 +133,8 @@ export interface AntibiogramEntry {
   repeatIsolatesExcluded: number
   patientIdentifiedPercentage: number
   realDataPercentage: number
+  /** Solo en pares con punto de corte por sitio (S. pneumoniae × ceftriaxona/cefepima). */
+  breakpointSite?: 'MENINGITIS' | 'NON_MENINGITIS' | null
 }
 
 export interface TrendPoint {

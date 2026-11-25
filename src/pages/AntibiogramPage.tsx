@@ -145,10 +145,15 @@ export default function AntibiogramPage() {
                 </thead>
                 <tbody>
                   {rows.map((e) => (
-                    <tr key={e.antibioticId} className={`border-t border-slate-100 ${e.sufficientData ? '' : 'opacity-50'}`}>
+                    <tr key={`${e.antibioticId}-${e.breakpointSite ?? 'ANY'}`} className={`border-t border-slate-100 ${e.sufficientData ? '' : 'opacity-50'}`}>
                       <td className="px-4 py-2">
                         {e.antibioticName}
                         {!e.sufficientData && <span className="ml-2 text-xs text-slate-500">(n &lt; 30)</span>}
+                        {e.breakpointSite && (
+                          <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600" title="Mismas CIM de todos los aislamientos, leídas con el punto de corte de CLSI para ese sitio de infección">
+                            {e.breakpointSite === 'MENINGITIS' ? 'CLSI meníngeo' : 'CLSI no meníngeo'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-2 text-right tabular-nums">{e.totalTested}</td>
                       <td className="px-4 py-2">
