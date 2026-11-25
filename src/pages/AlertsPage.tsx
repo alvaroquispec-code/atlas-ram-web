@@ -120,8 +120,8 @@ export default function AlertsPage() {
                     <span className="italic">{a.microorganismName}</span> resistente a {a.antibioticClass.toLowerCase()}
                   </p>
                   <p className="text-sm text-slate-500">
-                    {a.facilityName} · detectada el {formatDate(a.detectedOn)} · ventana {formatDate(a.windowStart)} –{' '}
-                    {formatDate(a.windowEnd)}
+                    {a.facilityName} · detectada el {formatDate(a.detectedOn)} · señal vigente en la última evaluación (
+                    {formatDate(a.windowStart)} – {formatDate(a.windowEnd)})
                   </p>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_TONES[a.status]}`}>
@@ -130,7 +130,7 @@ export default function AlertsPage() {
               </div>
               <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
                 <div>
-                  <p className="text-xs text-slate-500">Ventana de 4 semanas</p>
+                  <p className="text-xs text-slate-500">Última ventana evaluada (4 semanas)</p>
                   <p className="text-lg font-semibold text-red-700">
                     {a.observedPercentage.toFixed(0)} % <span className="text-sm font-normal text-slate-500">({a.resistantCount} de {a.testedCount})</span>
                   </p>
