@@ -12,7 +12,7 @@ import { useFetch } from '../hooks/useFetch'
 import { useToast } from '../hooks/useToast'
 import { isolateService } from '../services/isolateService'
 import { toApiError } from '../utils/apiError'
-import { formatDate, SPECIMEN_LABELS } from '../utils/labels'
+import { formatDate, formatMic, SPECIMEN_LABELS } from '../utils/labels'
 import NotFoundPage from './NotFoundPage'
 
 export default function IsolateDetailPage() {
@@ -144,7 +144,7 @@ export default function IsolateDetailPage() {
                 <td className="px-4 py-3">
                   {result.antibioticName} <span className="text-slate-400">({result.antibioticCode})</span>
                 </td>
-                <td className="px-4 py-3">{result.micValue ?? '—'}</td>
+                <td className="px-4 py-3 tabular-nums">{formatMic(result.micDisplay, result.micValue) ?? '—'}</td>
                 <td className="px-4 py-3">{result.diskDiffusionMm ?? '—'}</td>
                 <td className="px-4 py-3">
                   <InterpretationBadge value={result.interpretation} />
