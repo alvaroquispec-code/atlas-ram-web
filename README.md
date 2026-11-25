@@ -30,7 +30,13 @@ React 19 · TypeScript · Vite · Tailwind CSS 4 · React Router 7 · Axios · L
 | Ruta | Vista | Acceso |
 |---|---|---|
 | `/login`, `/register` | Inicio de sesión y registro con validación en tiempo real | Pública |
-| `/dashboard` | Resistencia por distrito: filtros de microorganismo, antibiótico y fechas (en query params), indicadores y cuadrícula por distrito | Autenticado |
+| `/dashboard` | Mapa de resistencia por distrito: filtros de microorganismo, antibiótico y fechas (en query params), indicadores y cuadrícula por distrito | Autenticado |
+| `/antibiogram?microorganismId&from&to&origin&all` | Antibiograma acumulado CLSI M39: % de sensibles con intervalo de confianza de Wilson, n, repetidos excluidos y aviso de procedencia de los datos | Autenticado |
+| `/trend?microorganismId&antibioticId&facilityId&interval&from&to&origin` | Tendencia de la resistencia por mes o trimestre con la prueba de Cochran-Armitage | Autenticado |
+| `/wisca?syndrome&facilityId&target&from&to&origin` | Tratamiento empírico: cobertura bayesiana de cada régimen por síndrome, con intervalo creíble y probabilidad de ser el mejor | Autenticado |
+| `/alerts?status` | Alertas de brote por establecimiento: % resistente de las últimas 4 semanas contra la línea base de 12 meses, valor p de la prueba binomial exacta; reconocer, cerrar y reevaluar un periodo | Técnico, epidemiólogo, admin (gestionar: epidemiólogo, admin) |
+| `/inventory` | Inventario de antibióticos: estado SISMED, pedido sugerido (R, S), unidades por vencer, presión de brote y consumo DDD por 100 camas-día según AWaRe | Farmacéutico, epidemiólogo, admin |
+| `/uploads` | Carga de CSV o exportación WHONET, con procedencia (real o sintética) y seguimiento del procesamiento | ADMIN o LAB_TECHNICIAN |
 | `/isolates?page&size&sort&facilityId&microorganismId&specimen` | Aislamientos paginados con filtros combinables, orden por fecha y acceso directo por número | Autenticado |
 | `/isolates/:id` | Detalle del aislamiento con su antibiograma (CIM, halo, interpretación CLSI); un ADMIN puede eliminarlo (`DELETE`) con confirmación | Autenticado |
 | `/antibiotics?q=` | Catálogo de antibióticos: búsqueda con debounce (en query param) y creación con `POST /antibiotics` y edición en línea con `PUT /antibiotics/{id}` | Solo ADMIN |

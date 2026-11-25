@@ -17,6 +17,7 @@ const ROLE_LABELS: Record<Role, string> = {
   LAB_TECHNICIAN: 'Técnico de laboratorio',
   EPIDEMIOLOGIST: 'Epidemiólogo',
   PUBLIC_VIEWER: 'Consulta pública',
+  PHARMACIST: 'Farmacéutico',
 }
 
 export default function UsersPage() {

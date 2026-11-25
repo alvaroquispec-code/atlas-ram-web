@@ -12,6 +12,12 @@ const IsolatesPage = lazy(() => import('../pages/IsolatesPage'))
 const IsolateDetailPage = lazy(() => import('../pages/IsolateDetailPage'))
 const UsersPage = lazy(() => import('../pages/UsersPage'))
 const AntibioticsPage = lazy(() => import('../pages/AntibioticsPage'))
+const AntibiogramPage = lazy(() => import('../pages/AntibiogramPage'))
+const TrendPage = lazy(() => import('../pages/TrendPage'))
+const WiscaPage = lazy(() => import('../pages/WiscaPage'))
+const UploadPage = lazy(() => import('../pages/UploadPage'))
+const AlertsPage = lazy(() => import('../pages/AlertsPage'))
+const InventoryPage = lazy(() => import('../pages/InventoryPage'))
 const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 
@@ -32,8 +38,50 @@ export default function AppRouter() {
         >
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/isolates" element={<IsolatesPage />} />
-          <Route path="/isolates/:id" element={<IsolateDetailPage />} />
+          <Route path="/antibiogram" element={<AntibiogramPage />} />
+          <Route path="/trend" element={<TrendPage />} />
+          <Route path="/wisca" element={<WiscaPage />} />
+          <Route
+            path="/alerts"
+            element={
+              <PrivateRoute roles={['ADMIN', 'EPIDEMIOLOGIST']}>
+                <AlertsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/inventory"
+            element={
+              <PrivateRoute roles={['ADMIN', 'PHARMACIST', 'EPIDEMIOLOGIST']}>
+                <InventoryPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/uploads"
+            element={
+              <PrivateRoute roles={['ADMIN', 'LAB_TECHNICIAN']}>
+                <UploadPage />
+              </PrivateRoute>
+            }
+          />
+          {/* Datos por aislamiento: solo los roles que el servidor autoriza en GET /isolates/** */}
+          <Route
+            path="/isolates"
+            element={
+              <PrivateRoute roles={['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST']}>
+                <IsolatesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/isolates/:id"
+            element={
+              <PrivateRoute roles={['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST']}>
+                <IsolateDetailPage />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/users"
             element={

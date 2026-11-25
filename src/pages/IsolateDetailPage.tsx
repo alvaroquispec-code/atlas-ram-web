@@ -1,6 +1,6 @@
 import { RotateCw } from 'lucide-react'
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { FileJson, Trash2 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Alert from '../components/Alert'
@@ -22,6 +22,7 @@ export default function IsolateDetailPage() {
   const { hasRole } = useAuth()
   const { showToast } = useToast()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   // Pedimos el aislamiento y sus resultados en paralelo; si sales de la página, se cancelan los dos.
   const { data, error, isLoading, reload } = useFetch(
@@ -58,6 +59,26 @@ export default function IsolateDetailPage() {
     }
   }
 
+  // Descarga el JSON FHIR como archivo: es lo que recibiría el sistema del hospital (HIS o LIS).
+  async function handleExport() {
+    setIsExporting(true)
+    try {
+      const bundle = await isolateService.fhirBundle(isolate.id)
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/fhir+json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `aislamiento-${isolate.id}-fhir.json`
+      link.click()
+      URL.revokeObjectURL(url)
+      showToast('Exportado en HL7 FHIR R4', 'success')
+    } catch (err) {
+      showToast(toApiError(err).message, 'error')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
     <section className="space-y-6">
       <Breadcrumbs
@@ -71,12 +92,21 @@ export default function IsolateDetailPage() {
       <header className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="text-2xl font-semibold italic">{isolate.microorganismName}</h1>
-          {hasRole('ADMIN') && (
-            <Button variant="danger" isLoading={isDeleting} onClick={handleDelete}>
-              {!isDeleting && <Trash2 size={16} aria-hidden />}
-              Eliminar
-            </Button>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {hasRole('ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST') && (
+              <Button variant="secondary" isLoading={isExporting} onClick={handleExport}
+                title="Descarga el resultado en HL7 FHIR R4 con códigos LOINC y SNOMED CT">
+                {!isExporting && <FileJson size={16} aria-hidden />}
+                Exportar HL7 FHIR
+              </Button>
+            )}
+            {hasRole('ADMIN') && (
+              <Button variant="danger" isLoading={isDeleting} onClick={handleDelete}>
+                {!isDeleting && <Trash2 size={16} aria-hidden />}
+                Eliminar
+              </Button>
+            )}
+          </div>
         </div>
         <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-4">
           <Info label="Fecha de toma" value={formatDate(isolate.collectionDate)} />

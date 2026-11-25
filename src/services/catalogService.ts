@@ -25,8 +25,9 @@ export const catalogService = {
     return data
   },
 
-  async updateAntibiotic(id: number, input: AntibioticInput) {
-    const { data } = await apiClient.put<Antibiotic>(`/antibiotics/${id}`, input)
+  async updateAntibiotic(id: number, input: AntibioticInput, awareCategory?: Antibiotic['awareCategory']) {
+    // PUT reemplaza el recurso completo: se reenvía el grupo AWaRe que ya tenía para no perderlo.
+    const { data } = await apiClient.put<Antibiotic>(`/antibiotics/${id}`, { ...input, awareCategory: awareCategory ?? null })
     return data
   },
 }
