@@ -1,4 +1,4 @@
-import { BellRing, Boxes, FlaskConical, LayoutDashboard, LogOut, Pill, Stethoscope, Table2, TrendingUp, Upload, UserRound, Users } from 'lucide-react'
+import { BellRing, Boxes, FlaskConical, LayoutDashboard, LogOut, Pill, Ruler, Stethoscope, Table2, TrendingUp, Upload, UserRound, Users } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import Button from '../components/Button'
 import ThemeToggle from '../components/ThemeToggle'
@@ -16,6 +16,7 @@ const NAV_ITEMS: { to: string; label: string; icon: typeof LayoutDashboard; role
   { to: '/isolates', label: 'Aislamientos', icon: FlaskConical, roles: ['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST'] },
   { to: '/uploads', label: 'Cargar', icon: Upload, roles: ['ADMIN', 'LAB_TECHNICIAN'] },
   { to: '/antibiotics', label: 'Antibióticos', icon: Pill, roles: ['ADMIN'] },
+  { to: '/breakpoints', label: 'Puntos de corte', icon: Ruler, roles: ['ADMIN'] },
   { to: '/users', label: 'Usuarios', icon: Users, roles: ['ADMIN'] },
 ]
 
