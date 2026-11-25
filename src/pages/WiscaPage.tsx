@@ -134,10 +134,21 @@ export default function WiscaPage() {
                   <tr key={r.code} className="border-t border-slate-100 align-top">
                     <td className="px-4 py-2">
                       <p className="font-medium">{r.antibioticNames.join(' + ')}</p>
+                      {(r.expectedResistantPathogens ?? []).length > 0 && (
+                        <p className="text-xs text-slate-500">
+                          Resistencia esperada (EUCAST), sin probar: {r.expectedResistantPathogens?.join(', ')}.
+                        </p>
+                      )}
+                      {(r.expectedSusceptiblePathogens ?? []).length > 0 && (
+                        <p className="text-xs text-slate-500">
+                          Sensibilidad esperada (EUCAST), sin probar: {r.expectedSusceptiblePathogens?.join(', ')}.
+                        </p>
+                      )}
                       {r.untestedPathogens.length > 0 && (
                         <p className="text-xs text-amber-700">
-                          Sin pruebas para {r.untestedPathogens.join(', ')} ({r.untestedFrequency.toFixed(0)} % de los
-                          casos): se cuentan como no cubiertos.
+                          Sin datos para {r.untestedPathogens.join(', ')} ({r.untestedFrequency.toFixed(0)} % de los
+                          casos): se cuentan como no cubiertos, así que la cobertura real podría ser hasta{' '}
+                          {r.untestedFrequency.toFixed(0)} puntos mayor.
                         </p>
                       )}
                     </td>
