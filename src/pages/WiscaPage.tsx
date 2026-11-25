@@ -10,10 +10,10 @@ import TextField from '../components/TextField'
 import { useFetch } from '../hooks/useFetch'
 import { antibiogramService } from '../services/antibiogramService'
 import { catalogService } from '../services/catalogService'
-import type { DataOrigin, Syndrome } from '../types/api'
-import { ORIGIN_LABELS, SYNDROME_LABELS } from '../utils/labels'
+import type { DataOrigin, Syndrome, Ward } from '../types/api'
+import { ORIGIN_LABELS, SYNDROME_LABELS, WARD_OPTIONS } from '../utils/labels'
 
-const DEFAULTS = { syndrome: 'BACTEREMIA', from: '2025-09-01', to: '2026-08-31', facilityId: '', target: '90', origin: '' }
+const DEFAULTS = { syndrome: 'BACTEREMIA', from: '2025-09-01', to: '2026-08-31', facilityId: '', target: '90', origin: '', ward: '' }
 type FilterKey = keyof typeof DEFAULTS
 
 const toneFor = (coverage: number, target: number) =>
@@ -29,6 +29,7 @@ export default function WiscaPage() {
     facilityId: read('facilityId'),
     target: Number(read('target')),
     origin: read('origin') as DataOrigin | '',
+    ward: read('ward') as Ward | '',
   }
   const update = (key: FilterKey, value: string) => {
     const next = new URLSearchParams(searchParams)
@@ -47,10 +48,11 @@ export default function WiscaPage() {
           facilityId: f.facilityId === '' ? undefined : Number(f.facilityId),
           target: f.target,
           origin: f.origin === '' ? undefined : f.origin,
+          ward: f.ward === '' ? undefined : f.ward,
         },
         signal,
       ),
-    [f.syndrome, f.from, f.to, f.facilityId, f.target, f.origin],
+    [f.syndrome, f.from, f.to, f.facilityId, f.target, f.origin, f.ward],
   )
   const data = result.data
 
@@ -96,6 +98,7 @@ export default function WiscaPage() {
             { value: 'SYNTHETIC', label: ORIGIN_LABELS.SYNTHETIC },
           ]}
         />
+        <SelectField label="Servicio" value={f.ward} onChange={(e) => update('ward', e.target.value)} options={WARD_OPTIONS} />
       </div>
 
       {result.isLoading ? (

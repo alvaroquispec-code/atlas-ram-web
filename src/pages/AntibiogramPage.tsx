@@ -11,10 +11,10 @@ import TextField from '../components/TextField'
 import { useFetch } from '../hooks/useFetch'
 import { antibiogramService } from '../services/antibiogramService'
 import { catalogService, microorganismLabel } from '../services/catalogService'
-import type { AntibiogramEntry, DataOrigin } from '../types/api'
-import { ORIGIN_LABELS, pct } from '../utils/labels'
+import type { AntibiogramEntry, DataOrigin, Ward } from '../types/api'
+import { ORIGIN_LABELS, pct, WARD_OPTIONS } from '../utils/labels'
 
-const DEFAULTS = { microorganismId: '1', from: '2025-09-01', to: '2026-08-31', origin: '', all: 'false' }
+const DEFAULTS = { microorganismId: '1', from: '2025-09-01', to: '2026-08-31', origin: '', ward: '', all: 'false' }
 type FilterKey = keyof typeof DEFAULTS
 
 // Colores del %S: verde ≥ 90 %, ámbar 70–89 %, rojo < 70 %.
@@ -27,6 +27,7 @@ export default function AntibiogramPage() {
   const from = read('from')
   const to = read('to')
   const origin = read('origin') as DataOrigin | ''
+  const ward = read('ward') as Ward | ''
   const includeInsufficient = read('all') === 'true'
 
   const update = (key: FilterKey, value: string) => {
@@ -45,10 +46,11 @@ export default function AntibiogramPage() {
           to,
           includeInsufficient,
           origin: origin === '' ? undefined : origin,
+          ward: ward === '' ? undefined : ward,
         },
         signal,
       ),
-    [microorganismId, from, to, origin, includeInsufficient],
+    [microorganismId, from, to, origin, ward, includeInsufficient],
   )
 
   const entries = result.data ?? []
@@ -74,7 +76,7 @@ export default function AntibiogramPage() {
         <StandardsNote />
       </header>
 
-      <div className="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-3 lg:grid-cols-6">
         <SelectField
           label="Microorganismo"
           value={microorganismId}
@@ -97,6 +99,7 @@ export default function AntibiogramPage() {
             { value: 'SYNTHETIC', label: ORIGIN_LABELS.SYNTHETIC },
           ]}
         />
+        <SelectField label="Servicio" value={ward} onChange={(e) => update('ward', e.target.value)} options={WARD_OPTIONS} />
         <label className="flex items-end gap-2 pb-2 text-sm text-slate-700">
           <input
             type="checkbox"

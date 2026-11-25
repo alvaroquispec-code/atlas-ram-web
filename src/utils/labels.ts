@@ -1,4 +1,4 @@
-import type { DataOrigin, Interpretation, Specimen, Syndrome } from '../types/api'
+import type { DataOrigin, Interpretation, Specimen, Syndrome, Ward } from '../types/api'
 
 export const SPECIMEN_LABELS: Record<Specimen, string> = {
   BLOOD: 'Sangre',
@@ -9,6 +9,19 @@ export const SPECIMEN_LABELS: Record<Specimen, string> = {
   STOOL: 'Heces',
   OTHER: 'Otra',
 }
+
+export const WARD_LABELS: Record<Ward, string> = {
+  ICU: 'UCI',
+  INPATIENT: 'Hospitalización',
+  EMERGENCY: 'Emergencia',
+  OUTPATIENT: 'Consulta externa',
+}
+
+/** Opciones del filtro de servicio, con "Todos" primero. */
+export const WARD_OPTIONS = [
+  { value: '', label: 'Todos' },
+  ...(Object.keys(WARD_LABELS) as Ward[]).map((w) => ({ value: w, label: WARD_LABELS[w] })),
+]
 
 export const INTERPRETATION_LABELS: Record<Interpretation, string> = {
   SUSCEPTIBLE: 'Sensible',

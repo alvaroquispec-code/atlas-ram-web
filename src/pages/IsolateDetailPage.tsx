@@ -12,7 +12,7 @@ import { useFetch } from '../hooks/useFetch'
 import { useToast } from '../hooks/useToast'
 import { isolateService } from '../services/isolateService'
 import { toApiError } from '../utils/apiError'
-import { formatDate, formatMic, SPECIMEN_LABELS } from '../utils/labels'
+import { formatDate, formatMic, SPECIMEN_LABELS, WARD_LABELS } from '../utils/labels'
 import NotFoundPage from './NotFoundPage'
 
 export default function IsolateDetailPage() {
@@ -111,6 +111,7 @@ export default function IsolateDetailPage() {
         <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-4">
           <Info label="Fecha de toma" value={formatDate(isolate.collectionDate)} />
           <Info label="Muestra" value={SPECIMEN_LABELS[isolate.specimenType]} />
+          <Info label="Servicio" value={isolate.ward ? WARD_LABELS[isolate.ward] : '—'} />
           <Info label="Establecimiento" value={isolate.facilityName} />
           <Info label="Distrito" value={isolate.districtName} />
           <Info label="Edad" value={isolate.patientAge === null ? '—' : `${isolate.patientAge} años`} />
@@ -168,4 +169,4 @@ function Info({ label, value }: { label: string; value: string }) {
       <dd className="font-medium text-slate-800">{value}</dd>
     </div>
   )
-}
+}

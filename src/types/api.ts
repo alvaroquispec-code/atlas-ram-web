@@ -74,7 +74,11 @@ export interface Isolate {
   districtName: string
   microorganismName: string
   dataUploadId: number | null
+  /** Servicio del paciente; null si el laboratorio no lo informó. */
+  ward?: Ward | null
 }
+
+export type Ward = 'OUTPATIENT' | 'EMERGENCY' | 'INPATIENT' | 'ICU'
 
 export interface SusceptibilityResult {
   id: number

@@ -1,4 +1,4 @@
-import type { AntibiogramEntry, BreakpointSite, DataOrigin, DistrictResistance, Syndrome, TrendResult, WiscaResult } from '../types/api'
+import type { AntibiogramEntry, BreakpointSite, DataOrigin, DistrictResistance, Ward, Syndrome, TrendResult, WiscaResult } from '../types/api'
 import { apiClient } from './apiClient'
 
 export interface ResistanceQuery {
@@ -15,6 +15,7 @@ export interface CumulativeQuery {
   to: string
   includeInsufficient: boolean
   origin?: DataOrigin
+  ward?: Ward
 }
 
 export interface TrendQuery {
@@ -35,6 +36,7 @@ export interface WiscaQuery {
   facilityId?: number
   target: number
   origin?: DataOrigin
+  ward?: Ward
 }
 
 /** Quita los filtros vacíos para que no viajen como "undefined" en la URL. */
