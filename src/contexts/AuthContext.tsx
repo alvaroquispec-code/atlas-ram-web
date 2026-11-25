@@ -11,6 +11,8 @@ export interface AuthContextValue {
   login: (credentials: LoginCredentials) => Promise<void>
   register: (payload: RegisterData) => Promise<void>
   logout: () => void
+  logoutEverywhere: () => Promise<void>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
   hasRole: (...roles: Role[]) => boolean
 }
 
@@ -50,11 +52,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(await authService.register(payload))
   }, [])
 
+  const logoutEverywhere = useCallback(async () => {
+    try {
+      await authService.logoutAll()
+    } finally {
+      setUser(null)
+      navigate('/login', { replace: true })
+    }
+  }, [navigate])
+
+  const changePassword = useCallback(
+    (currentPassword: string, newPassword: string) => authService.changePassword(currentPassword, newPassword),
+    [],
+  )
+
   const hasRole = useCallback((...roles: Role[]) => !!user && roles.includes(user.role), [user])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isAuthenticated: !!user, isRestoring, login, register, logout, hasRole }),
-    [user, isRestoring, login, register, logout, hasRole],
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isRestoring,
+      login,
+      register,
+      logout,
+      logoutEverywhere,
+      changePassword,
+      hasRole,
+    }),
+    [user, isRestoring, login, register, logout, logoutEverywhere, changePassword, hasRole],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

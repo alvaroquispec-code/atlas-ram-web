@@ -1,16 +1,20 @@
-import { RotateCw } from 'lucide-react'
+import { KeyRound, RotateCw } from 'lucide-react'
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Button from '../components/Button'
 import Pagination from '../components/Pagination'
 import Spinner from '../components/Spinner'
+import TextField from '../components/TextField'
 import { useAuth } from '../hooks/useAuth'
 import { useFetch } from '../hooks/useFetch'
+import { useForm } from '../hooks/useForm'
 import { useToast } from '../hooks/useToast'
 import { userService } from '../services/userService'
 import type { Role, User } from '../types/api'
 import { toApiError } from '../utils/apiError'
+import { strongPassword } from '../utils/validators'
 
 const ROLE_LABELS: Record<Role, string> = {
   ADMIN: 'Administrador',
@@ -23,6 +27,7 @@ const ROLE_LABELS: Record<Role, string> = {
 export default function UsersPage() {
   const { user: currentUser } = useAuth()
   const { showToast } = useToast()
+  const [resetTarget, setResetTarget] = useState<User | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Math.max(0, Number(searchParams.get('page') ?? 0))
   const size = Number(searchParams.get('size') ?? 10)
@@ -48,7 +53,9 @@ export default function UsersPage() {
       <Breadcrumbs items={[{ label: 'Panel', to: '/dashboard' }, { label: 'Usuarios' }]} />
       <header>
         <h1 className="text-2xl font-semibold">Usuarios</h1>
-        <p className="text-sm text-slate-500">Solo los administradores ven esta página. Cambia el rol o desactiva cuentas.</p>
+        <p className="text-sm text-slate-500">
+          Solo los administradores ven esta página. Cambia el rol, restablece la contraseña o desactiva cuentas.
+        </p>
       </header>
 
       {error ? (
@@ -102,7 +109,13 @@ export default function UsersPage() {
                           {user.active ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="flex justify-end gap-2 px-4 py-3">
+                        {!isMe && (
+                          <Button variant="secondary" onClick={() => setResetTarget(user)} title="Restablecer contraseña">
+                            <KeyRound size={16} aria-hidden />
+                            <span className="hidden md:inline">Contraseña</span>
+                          </Button>
+                        )}
                         {!isMe && (
                           <Button
                             variant={user.active ? 'danger' : 'secondary'}
@@ -128,6 +141,17 @@ export default function UsersPage() {
         </div>
       )}
 
+      {resetTarget && (
+        <ResetPasswordDialog
+          user={resetTarget}
+          onClose={() => setResetTarget(null)}
+          onDone={() => {
+            showToast(`Contraseña de ${resetTarget.fullName} restablecida. Se cerraron sus sesiones.`, 'success')
+            setResetTarget(null)
+          }}
+        />
+      )}
+
       {data && (
         <Pagination
           page={page}
@@ -139,5 +163,89 @@ export default function UsersPage() {
         />
       )}
     </section>
+  )
+}
+
+const RESET_EMPTY = { newPassword: '', confirmPassword: '' }
+const RESET_VALIDATORS = {
+  newPassword: strongPassword,
+  confirmPassword: (value: string, values: typeof RESET_EMPTY) =>
+    value === values.newPassword ? undefined : 'Las contraseñas no coinciden',
+}
+
+/**
+ * El administrador asigna una contraseña nueva (por ejemplo, si la persona la olvidó) y se la comunica por un
+ * canal seguro. El servidor cierra todas las sesiones abiertas de ese usuario.
+ */
+function ResetPasswordDialog({ user, onClose, onDone }: { user: User; onClose: () => void; onDone: () => void }) {
+  const [submitError, setSubmitError] = useState<string>()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { values, errors, handleChange, handleSubmit, setServerErrors } = useForm(RESET_EMPTY, RESET_VALIDATORS)
+
+  const submit = handleSubmit(async ({ newPassword }) => {
+    setSubmitError(undefined)
+    setIsSubmitting(true)
+    try {
+      await userService.resetPassword(user.id, newPassword)
+      onDone()
+    } catch (error) {
+      const apiError = toApiError(error)
+      if (apiError.fieldErrors) setServerErrors(apiError.fieldErrors)
+      setSubmitError(apiError.message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  })
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reset-title"
+        className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.key === 'Escape' && onClose()}
+      >
+        <h2 id="reset-title" className="text-lg font-semibold">
+          Restablecer contraseña
+        </h2>
+        <p className="text-sm text-slate-500">
+          {user.fullName} ({user.email}). Se cerrarán todas sus sesiones abiertas. Comunícale la contraseña por un canal
+          seguro y pídele que la cambie desde «Mi cuenta».
+        </p>
+        <form onSubmit={submit} noValidate className="space-y-4">
+          {submitError && <Alert tone="error">{submitError}</Alert>}
+          <TextField
+            label="Nueva contraseña"
+            name="newPassword"
+            type="password"
+            autoComplete="new-password"
+            autoFocus
+            hint="Mínimo 8 caracteres, con mayúscula, minúscula y número"
+            value={values.newPassword}
+            onChange={handleChange}
+            error={errors.newPassword}
+          />
+          <TextField
+            label="Confirmar contraseña"
+            name="confirmPassword"
+            type="password"
+            autoComplete="new-password"
+            value={values.confirmPassword}
+            onChange={handleChange}
+            error={errors.confirmPassword}
+          />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button type="submit" isLoading={isSubmitting}>
+              Restablecer
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
   )
 }

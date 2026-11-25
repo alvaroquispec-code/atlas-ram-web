@@ -1,4 +1,4 @@
-import { BellRing, Boxes, FlaskConical, LayoutDashboard, LogOut, Pill, Stethoscope, Table2, TrendingUp, Upload, Users } from 'lucide-react'
+import { BellRing, Boxes, FlaskConical, LayoutDashboard, LogOut, Pill, Stethoscope, Table2, TrendingUp, Upload, UserRound, Users } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import Button from '../components/Button'
 import ThemeToggle from '../components/ThemeToggle'
@@ -41,7 +41,15 @@ export default function AppLayout() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <span className="hidden whitespace-nowrap text-sm text-slate-600 sm:inline">{user?.fullName}</span>
+            <NavLink
+              to="/account"
+              className={linkClass}
+              aria-label="Mi cuenta"
+              title="Mi cuenta: cambiar contraseña y sesiones"
+            >
+              <UserRound size={16} aria-hidden />
+              <span className="hidden whitespace-nowrap sm:inline">{user?.fullName}</span>
+            </NavLink>
             <Button variant="ghost" onClick={logout} className="whitespace-nowrap" aria-label="Cerrar sesión" title="Cerrar sesión">
               <LogOut size={16} aria-hidden />
               <span className="hidden sm:inline">Cerrar sesión</span>
