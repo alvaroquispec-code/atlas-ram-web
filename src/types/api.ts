@@ -410,3 +410,33 @@ export interface ReinterpretationReport {
   withoutBreakpoint: number
   changes: { microorganism: string; antibiotic: string; from: string; to: string; count: number }[]
 }
+
+/** Fila de un antibiograma real publicado, con el valor de Atlas RAM para el mismo par. */
+export interface PublishedRow {
+  microorganismId: number
+  antibioticId: number
+  organismLabel: string
+  antibioticName: string
+  tested: number
+  resistant: number
+  resistancePercentage: number
+  resistanceCiLow: number
+  resistanceCiHigh: number
+  atlasTested: number | null
+  atlasResistancePercentage: number | null
+}
+
+/** Antibiograma real publicado (agregado de acceso abierto), con su fuente y licencia. */
+export interface PublishedAntibiogram {
+  code: string
+  title: string
+  citation: string
+  url: string
+  license: string
+  setting: string
+  specimenType: Specimen
+  periodStart: string
+  periodEnd: string
+  breakpointStandard: string
+  rows: PublishedRow[]
+}
