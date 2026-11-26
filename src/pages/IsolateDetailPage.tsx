@@ -1,7 +1,7 @@
-import { RotateCw } from 'lucide-react'
+import { CopyPlus, FileJson, Plus, RotateCw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { FileJson, Trash2 } from 'lucide-react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import AntibiogramEditor, { emptyRowError, toPayload, type EntryRow } from '../components/AntibiogramEditor'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
@@ -10,6 +10,7 @@ import Spinner from '../components/Spinner'
 import { useAuth } from '../hooks/useAuth'
 import { useFetch } from '../hooks/useFetch'
 import { useToast } from '../hooks/useToast'
+import { catalogService } from '../services/catalogService'
 import { isolateService } from '../services/isolateService'
 import { toApiError } from '../utils/apiError'
 import { formatDate, formatMic, SPECIMEN_LABELS, WARD_LABELS } from '../utils/labels'
@@ -23,6 +24,13 @@ export default function IsolateDetailPage() {
   const { showToast } = useToast()
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const canRegister = hasRole('ADMIN', 'LAB_TECHNICIAN')
+  // Agregar antibióticos que llegan después (todos o ninguno).
+  const [adding, setAdding] = useState(false)
+  const [newRows, setNewRows] = useState<EntryRow[]>([])
+  const [addError, setAddError] = useState<string | null>(null)
+  const [isSavingRows, setIsSavingRows] = useState(false)
+  const antibiotics = useFetch((signal) => (canRegister ? catalogService.antibiotics(signal) : Promise.resolve([])), [canRegister])
 
   // Pedimos el aislamiento y sus resultados en paralelo; si sales de la página, se cancelan los dos.
   const { data, error, isLoading, reload } = useFetch(
@@ -44,6 +52,28 @@ export default function IsolateDetailPage() {
 
   const [isolate, results] = data
   const resistant = results.filter((r) => r.interpretation === 'RESISTANT').length
+
+  async function saveNewRows() {
+    const list = antibiotics.data ?? []
+    const problem = newRows.length === 0 ? 'Agrega al menos un antibiótico' : emptyRowError(newRows, list)
+    if (problem) {
+      setAddError(problem)
+      return
+    }
+    setIsSavingRows(true)
+    setAddError(null)
+    try {
+      await isolateService.addResults(isolate.id, toPayload(newRows))
+      showToast(`${newRows.length} antibiótico(s) agregado(s)`, 'success')
+      setNewRows([])
+      setAdding(false)
+      reload()
+    } catch (err) {
+      setAddError(toApiError(err).message)
+    } finally {
+      setIsSavingRows(false)
+    }
+  }
 
   // Borrar un aislamiento también borra sus resultados y cambia el antibiograma: pedimos confirmación.
   async function handleDelete() {
@@ -93,6 +123,16 @@ export default function IsolateDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="text-2xl font-semibold italic">{isolate.microorganismName}</h1>
           <div className="flex flex-wrap gap-2">
+            {canRegister && (
+              <Link
+                to={`/isolates/new?from=${isolate.id}`}
+                title="Mismo paciente, muestra y fecha; otro microorganismo"
+                className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50"
+              >
+                <CopyPlus size={16} aria-hidden />
+                Otro aislamiento de este paciente
+              </Link>
+            )}
             {hasRole('ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST') && (
               <Button variant="secondary" isLoading={isExporting} onClick={handleExport}
                 title="Descarga el resultado en HL7 FHIR R4 con códigos LOINC y SNOMED CT">
@@ -158,6 +198,32 @@ export default function IsolateDetailPage() {
           </tbody>
         </table>
       </div>
+
+      {canRegister && (
+        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+          {!adding ? (
+            <Button variant="secondary" onClick={() => setAdding(true)}>
+              <Plus size={16} aria-hidden />
+              Agregar antibióticos
+            </Button>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-slate-700">Agregar antibióticos a este aislamiento</p>
+              {addError && <Alert tone="error">{addError}</Alert>}
+              <AntibiogramEditor
+                antibiotics={antibiotics.data ?? []}
+                rows={newRows}
+                onChange={(r) => { setNewRows(r); setAddError(null) }}
+                excludeCodes={results.map((r) => r.antibioticCode)}
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={() => { setAdding(false); setNewRows([]); setAddError(null) }}>Cancelar</Button>
+                <Button isLoading={isSavingRows} onClick={saveNewRows}>Guardar</Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   )
 }
@@ -169,4 +235,4 @@ function Info({ label, value }: { label: string; value: string }) {
       <dd className="font-medium text-slate-800">{value}</dd>
     </div>
   )
-}
+}

@@ -76,6 +76,9 @@ export interface Isolate {
   dataUploadId: number | null
   /** Servicio del paciente; null si el laboratorio no lo informó. */
   ward?: Ward | null
+  dataOrigin?: DataOrigin
+  facilityId?: number
+  microorganismId?: number
 }
 
 export type Ward = 'OUTPATIENT' | 'EMERGENCY' | 'INPATIENT' | 'ICU'
@@ -246,6 +249,10 @@ export interface CreateIsolatePayload {
     diskMm?: number
     reportedInterpretation?: Interpretation
   }[]
+  /** Historia clínica o DNI: el servidor guarda solo un seudónimo HMAC. */
+  patientId?: string
+  /** Otro aislamiento del mismo paciente: reutiliza su seudónimo. */
+  samePatientAsIsolateId?: number
 }
 
 export interface DataCompleteness {
