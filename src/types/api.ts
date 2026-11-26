@@ -115,6 +115,13 @@ export interface DistrictResistance {
   sufficientData: boolean
   /** Solo en pares con punto de corte por sitio: el que se usó. */
   breakpointSite?: BreakpointSite | null
+  /**
+   * Estimación con pooling parcial (Bayes empírico beta-binomial): con pocos aislamientos se acerca a la
+   * media de la red. Dato adicional; no reemplaza resistancePercentage. null sin datos.
+   */
+  pooledResistancePercentage?: number | null
+  pooledCiLow?: number | null
+  pooledCiHigh?: number | null
 }
 
 export type BreakpointSite = 'MENINGITIS' | 'NON_MENINGITIS'

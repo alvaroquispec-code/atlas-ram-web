@@ -1,4 +1,4 @@
-import { BellRing, RotateCw } from 'lucide-react'
+import { BellRing, FileDown, RotateCw } from 'lucide-react'
 import { useState } from 'react'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
@@ -10,6 +10,7 @@ import { useFetch } from '../hooks/useFetch'
 import { useToast } from '../hooks/useToast'
 import { alertService } from '../services/alertService'
 import { catalogService } from '../services/catalogService'
+import { reportService } from '../services/reportService'
 import type { AlertStatus, ResistanceAlert } from '../types/api'
 import { toApiError } from '../utils/apiError'
 import { formatDate } from '../utils/labels'
@@ -47,6 +48,30 @@ export default function AlertsPage() {
       showToast(toApiError(e).message, 'error')
     } finally {
       setIsReplaying(false)
+    }
+  }
+
+  // Reporte PROA en PDF para el comité (NTS 184).
+  const [reportFacility, setReportFacility] = useState('6')
+  const [reportFrom, setReportFrom] = useState('2026-01-01')
+  const [reportTo, setReportTo] = useState('2026-06-30')
+  const [isReporting, setIsReporting] = useState(false)
+
+  const downloadReport = async () => {
+    setIsReporting(true)
+    try {
+      const pdf = await reportService.proaPdf(Number(reportFacility), reportFrom, reportTo)
+      const url = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `reporte-proa-${reportFacility}-${reportFrom}-${reportTo}.pdf`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      const error = toApiError(e)
+      showToast(error.status === 403 ? 'Solo puedes generar el reporte de tus establecimientos' : error.message, 'error')
+    } finally {
+      setIsReporting(false)
     }
   }
 
@@ -98,6 +123,21 @@ export default function AlertsPage() {
             </Button>
           </>
         )}
+      </div>
+
+      <div className="flex flex-wrap items-end gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <SelectField
+          label="Reporte PROA del establecimiento"
+          value={reportFacility}
+          onChange={(e) => setReportFacility(e.target.value)}
+          options={(facilities.data ?? []).map((f) => ({ value: f.id, label: f.name }))}
+        />
+        <TextField label="Desde" type="date" value={reportFrom} onChange={(e) => setReportFrom(e.target.value)} />
+        <TextField label="Hasta" type="date" value={reportTo} onChange={(e) => setReportTo(e.target.value)} />
+        <Button variant="secondary" onClick={downloadReport} isLoading={isReporting}>
+          <FileDown size={16} aria-hidden />
+          Descargar PDF para el COAM
+        </Button>
       </div>
 
       {alerts.isLoading ? (

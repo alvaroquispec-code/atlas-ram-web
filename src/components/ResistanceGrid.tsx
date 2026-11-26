@@ -17,6 +17,14 @@ const LEGEND = [
   { label: 'Menos de 30 resultados', tone: toneFor(null) },
 ]
 
+/** Detalle al pasar el mouse: conteo y, si hay, la estimación ajustada con su intervalo. */
+function tooltip(d: DistrictResistance) {
+  const base = `${d.resistantCount} resistentes de ${d.totalTested} probados`
+  if (d.pooledResistancePercentage == null || d.pooledCiLow == null || d.pooledCiHigh == null) return base
+  return `${base}\nAjustado con la red (Bayes empírico): ${d.pooledResistancePercentage.toFixed(1)} % ` +
+    `[${d.pooledCiLow.toFixed(0)}–${d.pooledCiHigh.toFixed(0)} %]`
+}
+
 export default function ResistanceGrid({ districts }: { districts: DistrictResistance[] }) {
   // Primero los distritos con más resistencia; los que no tienen datos suficientes, al final.
   const sorted = [...districts].sort(
@@ -29,7 +37,7 @@ export default function ResistanceGrid({ districts }: { districts: DistrictResis
         {sorted.map((district) => (
           <li
             key={district.districtId}
-            title={`${district.resistantCount} resistentes de ${district.totalTested} probados`}
+            title={tooltip(district)}
             className={`rounded-lg px-3 py-2 ring-1 ${toneFor(district.resistancePercentage)}`}
           >
             <p className="truncate text-sm font-medium">{district.name}</p>
@@ -37,6 +45,9 @@ export default function ResistanceGrid({ districts }: { districts: DistrictResis
               {district.resistancePercentage === null ? '—' : `${district.resistancePercentage.toFixed(0)} %`}
             </p>
             <p className="text-xs opacity-80">n = {district.totalTested}</p>
+            {!district.sufficientData && district.pooledResistancePercentage != null && (
+              <p className="text-xs opacity-80">≈ {district.pooledResistancePercentage.toFixed(0)} % ajustado</p>
+            )}
           </li>
         ))}
       </ul>
@@ -48,6 +59,10 @@ export default function ResistanceGrid({ districts }: { districts: DistrictResis
           </span>
         ))}
       </div>
+      <p className="text-xs text-slate-500">
+        «≈ % ajustado»: con menos de 30 resultados, estimación que toma información del resto de distritos
+        (pooling parcial beta-binomial). No reemplaza la regla de 30 de CLSI M39.
+      </p>
     </div>
   )
 }
