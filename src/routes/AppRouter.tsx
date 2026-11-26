@@ -15,6 +15,7 @@ const AntibioticsPage = lazy(() => import('../pages/AntibioticsPage'))
 const AntibiogramPage = lazy(() => import('../pages/AntibiogramPage'))
 const TrendPage = lazy(() => import('../pages/TrendPage'))
 const WiscaPage = lazy(() => import('../pages/WiscaPage'))
+const RealDataPage = lazy(() => import('../pages/RealDataPage'))
 const UploadPage = lazy(() => import('../pages/UploadPage'))
 const NewIsolatePage = lazy(() => import('../pages/NewIsolatePage'))
 const AlertsPage = lazy(() => import('../pages/AlertsPage'))
@@ -44,6 +45,7 @@ export default function AppRouter() {
           <Route path="/antibiogram" element={<AntibiogramPage />} />
           <Route path="/trend" element={<TrendPage />} />
           <Route path="/wisca" element={<WiscaPage />} />
+          <Route path="/real-data" element={<RealDataPage />} />
           <Route
             path="/alerts"
             element={
@@ -124,4 +126,4 @@ export default function AppRouter() {
       </Routes>
     </Suspense>
   )
-}
+}
