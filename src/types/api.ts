@@ -113,6 +113,9 @@ export interface DistrictResistance {
   resistantCount: number
   resistancePercentage: number | null
   sufficientData: boolean
+  /** Intervalo de Wilson al 95 %; null sin datos suficientes. */
+  resistanceCiLow?: number | null
+  resistanceCiHigh?: number | null
   /** Solo en pares con punto de corte por sitio: el que se usó. */
   breakpointSite?: BreakpointSite | null
   /**

@@ -17,12 +17,49 @@ const LEGEND = [
   { label: 'Menos de 30 resultados', tone: toneFor(null) },
 ]
 
-/** Detalle al pasar el mouse: conteo y, si hay, la estimación ajustada con su intervalo. */
-function tooltip(d: DistrictResistance) {
-  const base = `${d.resistantCount} resistentes de ${d.totalTested} probados`
-  if (d.pooledResistancePercentage == null || d.pooledCiLow == null || d.pooledCiHigh == null) return base
-  return `${base}\nAjustado con la red (Bayes empírico): ${d.pooledResistancePercentage.toFixed(1)} % ` +
-    `[${d.pooledCiLow.toFixed(0)}–${d.pooledCiHigh.toFixed(0)} %]`
+const pct = (value: number, digits = 0) => `${value.toFixed(digits)} %`
+
+/**
+ * Detalle del distrito al pasar el mouse o con el teclado (Tab). Se dibuja con CSS en vez de usar el atributo
+ * title del navegador, que tarda en aparecer y casi no se ve. Colores fijos: se lee igual en modo claro y oscuro.
+ */
+function DistrictDetail({ d }: { d: DistrictResistance }) {
+  const hasPooled = d.pooledResistancePercentage != null && d.pooledCiLow != null && d.pooledCiHigh != null
+  return (
+    <div
+      role="tooltip"
+      className="pointer-events-none invisible absolute inset-x-0 top-full z-30 mt-2 rounded-lg bg-[#0f172a] p-3 text-left text-xs leading-relaxed text-[#e2e8f0] opacity-0 shadow-xl ring-1 ring-[#3b82f6] transition-opacity duration-100 group-hover:visible group-hover:opacity-100 group-focus:visible group-focus:opacity-100"
+    >
+      <p className="font-semibold text-white">{d.name}</p>
+      <p>
+        {d.resistantCount} resistentes de {d.totalTested} probados
+      </p>
+      {d.sufficientData && d.resistancePercentage != null ? (
+        <p>
+          Resistencia: <span className="font-semibold text-white">{pct(d.resistancePercentage)}</span>
+          {d.resistanceCiLow != null && d.resistanceCiHigh != null && (
+            <> (IC 95 %: {pct(d.resistanceCiLow)}–{pct(d.resistanceCiHigh)})</>
+          )}
+        </p>
+      ) : (
+        <p className="text-[#94a3b8]">Menos de 30 resultados: CLSI M39 no publica el porcentaje.</p>
+      )}
+      {!d.sufficientData && hasPooled && (
+        <div className="mt-2 border-t border-[#334155] pt-2">
+          <p>
+            Ajustado con la red:{' '}
+            <span className="font-semibold text-[#93c5fd]">{pct(d.pooledResistancePercentage!, 1)}</span>
+          </p>
+          <p>
+            IC 95 %: {pct(d.pooledCiLow!)}–{pct(d.pooledCiHigh!)}
+          </p>
+          <p className="mt-1 text-[#94a3b8]">
+            Bayes empírico: con pocos datos se acerca al promedio de los distritos de Lima.
+          </p>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function ResistanceGrid({ districts }: { districts: DistrictResistance[] }) {
@@ -37,8 +74,8 @@ export default function ResistanceGrid({ districts }: { districts: DistrictResis
         {sorted.map((district) => (
           <li
             key={district.districtId}
-            title={tooltip(district)}
-            className={`rounded-lg px-3 py-2 ring-1 ${toneFor(district.resistancePercentage)}`}
+            tabIndex={0}
+            className={`group relative cursor-default rounded-lg px-3 py-2 ring-1 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 hover:z-20 focus:z-20 ${toneFor(district.resistancePercentage)}`}
           >
             <p className="truncate text-sm font-medium">{district.name}</p>
             <p className="text-lg font-semibold">
@@ -46,8 +83,11 @@ export default function ResistanceGrid({ districts }: { districts: DistrictResis
             </p>
             <p className="text-xs opacity-80">n = {district.totalTested}</p>
             {!district.sufficientData && district.pooledResistancePercentage != null && (
-              <p className="text-xs opacity-80">≈ {district.pooledResistancePercentage.toFixed(0)} % ajustado</p>
+              <p className="mt-1 inline-block rounded bg-brand-50 px-1.5 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-brand-200">
+                ≈ {district.pooledResistancePercentage.toFixed(0)} % ajustado
+              </p>
             )}
+            <DistrictDetail d={district} />
           </li>
         ))}
       </ul>
@@ -60,7 +100,7 @@ export default function ResistanceGrid({ districts }: { districts: DistrictResis
         ))}
       </div>
       <p className="text-xs text-slate-500">
-        «≈ % ajustado»: con menos de 30 resultados, estimación que toma información del resto de distritos
+        Pasa el mouse sobre un distrito para ver el detalle. «≈ % ajustado»: con menos de 30 resultados, estimación que toma información del resto de distritos
         (pooling parcial beta-binomial). No reemplaza la regla de 30 de CLSI M39.
       </p>
     </div>
