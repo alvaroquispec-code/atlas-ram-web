@@ -210,7 +210,7 @@ function LivePreview({ row, microorganismId, specimen }: { row: EntryRow; microo
     <span className="flex items-center gap-1 text-xs text-slate-500" aria-live="polite">
       →
       <InterpretationBadge value={preview.interpretation} />
-      {preview.source === 'CALCULATED' ? 'calculado con CLSI' : 'lectura del laboratorio'}
+      {preview.message ?? (preview.source === 'CALCULATED' ? 'calculado con CLSI' : 'lectura del laboratorio')}
     </span>
   )
 }
