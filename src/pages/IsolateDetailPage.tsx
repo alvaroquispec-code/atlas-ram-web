@@ -213,6 +213,8 @@ export default function IsolateDetailPage() {
               <AntibiogramEditor
                 antibiotics={antibiotics.data ?? []}
                 rows={newRows}
+                microorganismId={isolate.microorganismId}
+                specimen={isolate.specimenType}
                 onChange={(r) => { setNewRows(r); setAddError(null) }}
                 excludeCodes={results.map((r) => r.antibioticCode)}
               />
