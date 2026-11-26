@@ -1,7 +1,8 @@
 import { Save } from 'lucide-react'
-import { useMemo, useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
+import AntibiogramEditor, { emptyRowError, toPayload, type EntryRow } from '../components/AntibiogramEditor'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Button from '../components/Button'
 import SelectField from '../components/SelectField'
@@ -12,19 +13,12 @@ import { useToast } from '../hooks/useToast'
 import { catalogService, microorganismLabel } from '../services/catalogService'
 import { isolateService } from '../services/isolateService'
 import { uploadService } from '../services/uploadService'
-import type { DataOrigin, Interpretation, Specimen, Ward } from '../types/api'
+import type { DataOrigin, Specimen, Ward } from '../types/api'
 import { toApiError } from '../utils/apiError'
-import { INTERPRETATION_LABELS, ORIGIN_LABELS, SPECIMEN_LABELS, WARD_LABELS } from '../utils/labels'
+import { ORIGIN_LABELS, SPECIMEN_LABELS, WARD_LABELS } from '../utils/labels'
 
-interface ResultRow {
-  mic: string
-  diskMm: string
-  reported: Interpretation | ''
-}
-
-const EMPTY_ROW: ResultRow = { mic: '', diskMm: '', reported: '' }
-const today = () => new Date().toISOString().slice(0, 10)
-const filled = (r: ResultRow) => r.mic.trim() !== '' || r.diskMm.trim() !== '' || r.reported !== ''
+// Fecha local (no UTC): en Lima, después de las 19:00 la fecha UTC ya es la de mañana.
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)
 
 /**
  * Registro de UN paciente con su antibiograma, para cuando el laboratorio no tiene una exportación (o es un caso
@@ -34,6 +28,9 @@ const filled = (r: ResultRow) => r.mic.trim() !== '' || r.diskMm.trim() !== '' |
 export default function NewIsolatePage() {
   const navigate = useNavigate()
   const { showToast } = useToast()
+  // ?from=ID: otro aislamiento del mismo paciente; el formulario se llena con sus datos.
+  const [searchParams] = useSearchParams()
+  const fromId = Number(searchParams.get('from')) || null
   const catalogs = useFetch(
     (signal) =>
       Promise.all([uploadService.myFacilities(signal), catalogService.microorganisms(signal), catalogService.antibiotics(signal)]),
@@ -50,8 +47,30 @@ export default function NewIsolatePage() {
     patientSex: '' as 'M' | 'F' | '',
     ward: '' as Ward | '',
     dataOrigin: 'SYNTHETIC' as DataOrigin,
+    patientId: '',
   })
-  const [rows, setRows] = useState<Record<number, ResultRow>>({})
+  const [rows, setRows] = useState<EntryRow[]>([])
+
+  useEffect(() => {
+    if (!fromId) return
+    const controller = new AbortController()
+    isolateService
+      .findById(fromId, controller.signal)
+      .then((i) =>
+        setForm((f) => ({
+          ...f,
+          collectionDate: i.collectionDate,
+          specimenType: i.specimenType,
+          facilityId: i.facilityId ? String(i.facilityId) : f.facilityId,
+          patientAge: i.patientAge === null ? '' : String(i.patientAge),
+          patientSex: i.patientSex === 'M' || i.patientSex === 'F' ? i.patientSex : '',
+          ward: i.ward ?? '',
+          dataOrigin: i.dataOrigin ?? f.dataOrigin,
+        })),
+      )
+      .catch(() => undefined)
+    return () => controller.abort()
+  }, [fromId])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -61,9 +80,6 @@ export default function NewIsolatePage() {
     setForm((f) => ({ ...f, [key]: value }))
     setErrors((e) => ({ ...e, [key]: '' }))
   }
-  const setRow = (id: number, patch: Partial<ResultRow>) =>
-    setRows((r) => ({ ...r, [id]: { ...(r[id] ?? EMPTY_ROW), ...patch } }))
-  const filledCount = useMemo(() => Object.values(rows).filter(filled).length, [rows])
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -75,7 +91,11 @@ export default function NewIsolatePage() {
     if (form.patientAge.trim() === '' || !Number.isInteger(age) || age < 0 || age > 120) e.patientAge = 'Edad entre 0 y 120'
     if (!form.patientSex) e.patientSex = 'Elige el sexo'
     if (!form.ward) e.ward = 'Elige el servicio'
-    if (filledCount === 0) e.results = 'Registra al menos un antibiótico del antibiograma'
+    if (rows.length === 0) e.results = 'Agrega al menos un antibiótico del antibiograma'
+    else {
+      const empty = emptyRowError(rows, antibiotics)
+      if (empty) e.results = empty
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -95,14 +115,9 @@ export default function NewIsolatePage() {
         patientSex: form.patientSex as 'M' | 'F',
         ward: form.ward as Ward,
         dataOrigin: form.dataOrigin,
-        results: Object.entries(rows)
-          .filter(([, r]) => filled(r))
-          .map(([id, r]) => ({
-            antibioticId: Number(id),
-            mic: r.mic.trim() || undefined,
-            diskMm: r.diskMm.trim() ? Number(r.diskMm) : undefined,
-            reportedInterpretation: r.reported || undefined,
-          })),
+        results: toPayload(rows),
+        patientId: form.patientId.trim() || undefined,
+        samePatientAsIsolateId: fromId ?? undefined,
       })
       showToast(`Aislamiento #${created.id} registrado`, 'success')
       navigate(`/isolates/${created.id}`)
@@ -121,13 +136,19 @@ export default function NewIsolatePage() {
     <section className="space-y-6">
       <Breadcrumbs items={[{ label: 'Aislamientos', to: '/isolates' }, { label: 'Registrar' }]} />
       <header>
-        <h1 className="text-2xl font-semibold">Registrar un paciente</h1>
+        <h1 className="text-2xl font-semibold">{fromId ? `Otro aislamiento del paciente del #${fromId}` : 'Registrar un paciente'}</h1>
         <p className="text-sm text-slate-500">
           Un aislamiento con su antibiograma. Para muchos pacientes a la vez, usa{' '}
           <Link to="/uploads" className="text-brand-600 underline">la carga de archivos</Link> (CSV o WHONET).
         </p>
       </header>
 
+      {fromId && (
+        <Alert tone="info">
+          Se copiaron los datos del aislamiento #{fromId}. Elige el microorganismo y su antibiograma; queda vinculado al
+          mismo paciente (CLSI M39 cuenta un solo primer aislamiento por paciente y especie).
+        </Alert>
+      )}
       {formError && <Alert tone="error">{formError}</Alert>}
 
       <form onSubmit={submit} className="space-y-6" noValidate>
@@ -149,58 +170,22 @@ export default function NewIsolatePage() {
             options={(Object.keys(WARD_LABELS) as Ward[]).map((w) => ({ value: w, label: WARD_LABELS[w] }))} />
           <Select label="Procedencia" value={form.dataOrigin} onChange={set('dataOrigin')} placeholder={false}
             options={(['SYNTHETIC', 'REAL'] as DataOrigin[]).map((o) => ({ value: o, label: ORIGIN_LABELS[o] }))} />
+          {!fromId && (
+            <TextField label="Historia clínica o DNI (opcional)" value={form.patientId} autoComplete="off"
+              onChange={(e) => set('patientId')(e.target.value)} error={errors.patientId}
+              hint="No se guarda: solo un seudónimo, para contar un aislamiento por paciente" />
+          )}
         </fieldset>
 
         <fieldset className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
           <legend className="px-1 text-sm font-semibold text-slate-700">Antibiograma</legend>
           <p className="mb-3 text-xs text-slate-500">
-            Completa solo los antibióticos probados. La CIM se escribe como la informa el equipo (≤0,25 · 2 · ≥16) y se
-            interpreta con el punto de corte CLSI vigente; la interpretación del laboratorio solo se usa si la CIM o el
-            halo no bastan. Usa CIM o halo (difusión en disco), no ambos. {filledCount} con resultado.
+            Agrega solo los antibióticos probados. Elige ≤, = o ≥ y escribe la CIM como la informa el equipo; se
+            interpreta con el punto de corte CLSI vigente. Usa el halo solo si fue difusión en disco, y la lectura S, I o R
+            del laboratorio cuando la CIM o el halo no basten.
           </p>
           {errors.results && <p className="mb-2 text-sm text-red-600">{errors.results}</p>}
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="py-2 pr-4">Antibiótico</th>
-                  <th className="py-2 pr-4">CIM <span className="normal-case">(µg/mL)</span></th>
-                  <th className="py-2 pr-4" title="Difusión en disco: diámetro de la zona de inhibición">Halo <span className="normal-case">(mm, disco)</span></th>
-                  <th className="py-2">Interpretación del laboratorio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {antibiotics.map((a) => {
-                  const r = rows[a.id] ?? EMPTY_ROW
-                  return (
-                    <tr key={a.id} className={`border-t border-slate-100 ${filled(r) ? 'bg-brand-50/40' : ''}`}>
-                      <td className="py-1.5 pr-4">{a.name} <span className="text-xs text-slate-400">{a.code}</span></td>
-                      <td className="py-1.5 pr-4">
-                        <input aria-label={`CIM de ${a.name}`} value={r.mic} placeholder="—"
-                          onChange={(e) => setRow(a.id, { mic: e.target.value })}
-                          className="w-28 rounded-md border border-slate-300 px-2 py-1" />
-                      </td>
-                      <td className="py-1.5 pr-4">
-                        <input aria-label={`Halo de ${a.name}`} inputMode="numeric" value={r.diskMm} placeholder="—"
-                          onChange={(e) => setRow(a.id, { diskMm: e.target.value })}
-                          className="w-20 rounded-md border border-slate-300 px-2 py-1" />
-                      </td>
-                      <td className="py-1.5">
-                        <select aria-label={`Interpretación de ${a.name}`} value={r.reported}
-                          onChange={(e) => setRow(a.id, { reported: e.target.value as Interpretation | '' })}
-                          className="rounded-md border border-slate-300 bg-white px-2 py-1">
-                          <option value="">—</option>
-                          {(Object.keys(INTERPRETATION_LABELS) as Interpretation[]).map((i) => (
-                            <option key={i} value={i}>{INTERPRETATION_LABELS[i]}</option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <AntibiogramEditor antibiotics={antibiotics} rows={rows} onChange={(r) => { setRows(r); setErrors((e) => ({ ...e, results: '' })) }} />
         </fieldset>
 
         <div className="flex justify-end">
