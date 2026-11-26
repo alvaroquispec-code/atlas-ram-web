@@ -1,5 +1,9 @@
 import { Plus, X } from 'lucide-react'
-import type { Antibiotic, Interpretation } from '../types/api'
+import { useEffect, useState } from 'react'
+import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { isolateService } from '../services/isolateService'
+import type { Antibiotic, Interpretation, InterpretationPreview, Specimen } from '../types/api'
+import InterpretationBadge from './InterpretationBadge'
 
 export type MicQualifierInput = '<=' | '=' | '>='
 
@@ -50,6 +54,9 @@ interface Props {
   onChange: (rows: EntryRow[]) => void
   /** Códigos que el aislamiento ya tiene: no se ofrecen. */
   excludeCodes?: string[]
+  /** Con el microorganismo (y la muestra, para el punto de corte del sitio) se muestra la interpretación en vivo. */
+  microorganismId?: number
+  specimen?: Specimen
 }
 
 /**
@@ -57,7 +64,7 @@ interface Props {
  * tres botones (≤ = ≥) en vez de escribir "<=": menos toques, se ve siempre lo elegido y el número solo admite
  * dígitos. "> 16" equivale a "≥ 32" (las diluciones se duplican), así que tres opciones bastan.
  */
-export default function AntibiogramEditor({ antibiotics, rows, onChange, excludeCodes = [] }: Props) {
+export default function AntibiogramEditor({ antibiotics, rows, onChange, excludeCodes = [], microorganismId, specimen }: Props) {
   const used = new Set(rows.map((r) => r.antibioticId))
   const available = antibiotics.filter((a) => !used.has(a.id) && !excludeCodes.includes(a.code))
   const update = (id: number, patch: Partial<EntryRow>) =>
@@ -76,6 +83,7 @@ export default function AntibiogramEditor({ antibiotics, rows, onChange, exclude
                   {a?.name} <span className="text-xs font-normal text-slate-400">{a?.code}</span>
                 </span>
                 <div className="flex items-center gap-1" aria-label={`CIM de ${a?.name}`}>
+                  <span className="text-xs font-semibold text-slate-500" title="Concentración mínima inhibitoria">CIM</span>
                   <Segmented options={QUALIFIERS} value={r.qualifier} onSelect={(q) => update(r.antibioticId, { qualifier: q })} />
                   <input
                     aria-label={`Valor de la CIM de ${a?.name} en µg/mL`}
@@ -106,6 +114,7 @@ export default function AntibiogramEditor({ antibiotics, rows, onChange, exclude
                     onSelect={(v) => update(r.antibioticId, { reported: r.reported === v ? '' : v })}
                   />
                 </div>
+                <LivePreview row={r} microorganismId={microorganismId} specimen={specimen} />
                 <button
                   type="button"
                   onClick={() => onChange(rows.filter((x) => x.antibioticId !== r.antibioticId))}
@@ -160,5 +169,48 @@ function Segmented<T extends string>({ options, value, onSelect }: {
         </button>
       ))}
     </div>
+  )
+}
+
+/**
+ * Lo que el servidor haría con esta fila al guardar (S, I o R y de dónde sale), mientras se escribe. Se pregunta al
+ * servidor en vez de repetir la lógica aquí: así lo que se ve es exactamente lo que se va a guardar.
+ */
+function LivePreview({ row, microorganismId, specimen }: { row: EntryRow; microorganismId?: number; specimen?: Specimen }) {
+  const [preview, setPreview] = useState<InterpretationPreview | null>(null)
+  const mic = row.value.trim() ? `${row.qualifier === '=' ? '' : row.qualifier}${row.value.trim().replace(',', '.')}` : undefined
+  const query = useDebouncedValue(
+    JSON.stringify({ microorganismId, antibioticId: row.antibioticId, specimen, mic, diskMm: row.diskMm || undefined, reported: row.reported || undefined }),
+    400,
+  )
+
+  useEffect(() => {
+    const params = JSON.parse(query)
+    if (!params.microorganismId || !isFilled(row)) {
+      setPreview(null)
+      return
+    }
+    const controller = new AbortController()
+    isolateService
+      .previewInterpretation({ ...params, diskMm: params.diskMm ? Number(params.diskMm) : undefined }, controller.signal)
+      .then(setPreview)
+      .catch(() => setPreview(null))
+    return () => controller.abort()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query])
+
+  if (!microorganismId) {
+    return isFilled(row) ? <span className="text-xs text-slate-400">Elige el microorganismo para ver la interpretación</span> : null
+  }
+  if (!preview) return null
+  if (!preview.interpretation) {
+    return <span className="text-xs text-amber-700">{preview.message}</span>
+  }
+  return (
+    <span className="flex items-center gap-1 text-xs text-slate-500" aria-live="polite">
+      →
+      <InterpretationBadge value={preview.interpretation} />
+      {preview.source === 'CALCULATED' ? 'calculado con CLSI' : 'lectura del laboratorio'}
+    </span>
   )
 }

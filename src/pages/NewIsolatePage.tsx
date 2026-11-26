@@ -185,7 +185,7 @@ export default function NewIsolatePage() {
             del laboratorio cuando la CIM o el halo no basten.
           </p>
           {errors.results && <p className="mb-2 text-sm text-red-600">{errors.results}</p>}
-          <AntibiogramEditor antibiotics={antibiotics} rows={rows} onChange={(r) => { setRows(r); setErrors((e) => ({ ...e, results: '' })) }} />
+          <AntibiogramEditor antibiotics={antibiotics} rows={rows} microorganismId={form.microorganismId ? Number(form.microorganismId) : undefined} specimen={form.specimenType || undefined} onChange={(r) => { setRows(r); setErrors((e) => ({ ...e, results: '' })) }} />
         </fieldset>
 
         <div className="flex justify-end">

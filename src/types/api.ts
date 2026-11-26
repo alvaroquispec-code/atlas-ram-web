@@ -40,6 +40,13 @@ export interface ApiErrorBody {
 }
 
 export type Interpretation = 'SUSCEPTIBLE' | 'INTERMEDIATE' | 'RESISTANT'
+
+/** Cómo se interpretaría un resultado antes de guardarlo (misma lógica que el registro). */
+export interface InterpretationPreview {
+  interpretation: Interpretation | null
+  source: 'CALCULATED' | 'LAB_REPORTED' | null
+  message: string | null
+}
 export type Specimen = 'BLOOD' | 'URINE' | 'RESPIRATORY' | 'WOUND' | 'CSF' | 'STOOL' | 'OTHER'
 
 export interface Microorganism {
