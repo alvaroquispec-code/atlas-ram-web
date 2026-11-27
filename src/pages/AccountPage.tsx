@@ -1,6 +1,7 @@
 import { KeyRound, LogOut, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import Alert from '../components/Alert'
+import MyAccessRequests from '../components/MyAccessRequests'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Button from '../components/Button'
 import TextField from '../components/TextField'
@@ -85,6 +86,7 @@ export default function AccountPage() {
           </Button>
         </div>
       </div>
+      {user && <MyAccessRequests role={user.role} />}
     </section>
   )
 }

@@ -1,6 +1,7 @@
 import { KeyRound, RotateCw } from 'lucide-react'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import AccessRequestsPanel from '../components/AccessRequestsPanel'
 import Alert from '../components/Alert'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Button from '../components/Button'
@@ -57,6 +58,8 @@ export default function UsersPage() {
           Solo los administradores ven esta página. Cambia el rol, restablece la contraseña o desactiva cuentas.
         </p>
       </header>
+
+      <AccessRequestsPanel onDecided={reload} />
 
       {error ? (
         <Alert tone="error" action={<Button variant="ghost" onClick={reload}><RotateCw size={16} aria-hidden />Reintentar</Button>}>

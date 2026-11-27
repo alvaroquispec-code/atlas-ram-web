@@ -1,4 +1,4 @@
-import type { AuthResponse, User } from '../types/api'
+import type { AuthResponse, ProfessionalRequest, User } from '../types/api'
 import { apiClient } from './apiClient'
 import { tokenStorage } from './tokenStorage'
 
@@ -9,6 +9,10 @@ export interface LoginCredentials {
 
 export interface RegisterData extends LoginCredentials {
   fullName: string
+  /** Aceptación de la política de datos personales (obligatoria). */
+  acceptedDataPolicy: boolean
+  /** Solo si es profesional de la salud: crea una solicitud de acceso. */
+  professional?: ProfessionalRequest
 }
 
 function storeTokens(auth: AuthResponse) {

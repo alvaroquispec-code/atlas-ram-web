@@ -1,7 +1,8 @@
-import { RotateCw } from 'lucide-react'
+import { LayoutGrid, Map as MapIcon, RotateCw } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
+import LimaMap from '../components/LimaMap'
 import ResistanceGrid from '../components/ResistanceGrid'
 import SelectField from '../components/SelectField'
 import SiteToggle from '../components/SiteToggle'
@@ -30,6 +31,15 @@ export default function DashboardPage() {
     to: read('to'),
     // Solo cuenta en pares con punto de corte por sitio; el servidor usa "no meníngeo" por defecto.
     site: (searchParams.get('site') ?? undefined) as BreakpointSite | undefined,
+  }
+
+  // Vista de datos (cuadros, por defecto) o vista de mapa; también vive en la URL.
+  const view = searchParams.get('view') === 'map' ? 'map' : 'data'
+  const setView = (next: 'map' | 'data') => {
+    const params = new URLSearchParams(searchParams)
+    if (next === 'map') params.set('view', 'map')
+    else params.delete('view')
+    setSearchParams(params, { replace: true })
   }
 
   const updateFilter = (key: FilterKey, value: string) => {
@@ -61,12 +71,34 @@ export default function DashboardPage() {
 
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Resistencia por distrito</h1>
-        <p className="text-sm text-slate-500">
-          Hola, {user?.fullName}. Elige un microorganismo y un antibiótico para ver el porcentaje de aislamientos
-          resistentes en cada distrito de Lima y Callao.
-        </p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Resistencia por distrito</h1>
+          <p className="text-sm text-slate-500">
+            Hola, {user?.fullName}. Elige un microorganismo y un antibiótico para ver el porcentaje de aislamientos
+            resistentes en cada distrito de Lima y Callao.
+          </p>
+        </div>
+        <div role="radiogroup" aria-label="Vista" className="inline-flex rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
+          {([
+            { value: 'data', label: 'Vista de datos', icon: LayoutGrid },
+            { value: 'map', label: 'Vista de mapa', icon: MapIcon },
+          ] as const).map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={view === option.value}
+              onClick={() => setView(option.value)}
+              className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                view === option.value ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <option.icon size={16} aria-hidden />
+              {option.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <div className="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-4">
@@ -126,7 +158,7 @@ export default function DashboardPage() {
           {withData.length === 0 && (
             <Alert tone="warning">Ningún distrito llega a 30 resultados en este periodo. Amplía el rango de fechas.</Alert>
           )}
-          <ResistanceGrid districts={districts} />
+          {view === 'map' ? <LimaMap districts={districts} /> : <ResistanceGrid districts={districts} />}
         </>
       )}
     </section>
@@ -140,4 +172,4 @@ function Stat({ label, value }: { label: string; value: string }) {
       <dd className="mt-1 text-xl font-semibold text-slate-800">{value}</dd>
     </div>
   )
-}
+}
