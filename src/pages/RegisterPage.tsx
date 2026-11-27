@@ -199,7 +199,11 @@ export default function RegisterPage() {
               <Link to="/privacidad" target="_blank" className="font-medium text-brand-600 hover:underline">
                 política de tratamiento de datos personales
               </Link>{' '}
-              (Ley 29733).
+              (Ley 29733) y los{' '}
+              <Link to="/terminos" target="_blank" className="font-medium text-brand-600 hover:underline">
+                términos de uso
+              </Link>
+              .
             </span>
           </label>
           {acceptedError && <p className="text-sm text-red-600">{acceptedError}</p>}

@@ -8,6 +8,7 @@ import AuthLayout from '../layouts/AuthLayout'
 const LoginPage = lazy(() => import('../pages/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/RegisterPage'))
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage'))
+const TermsPage = lazy(() => import('../pages/TermsPage'))
 const DashboardPage = lazy(() => import('../pages/DashboardPage'))
 const IsolatesPage = lazy(() => import('../pages/IsolatesPage'))
 const IsolateDetailPage = lazy(() => import('../pages/IsolateDetailPage'))
@@ -31,6 +32,7 @@ export default function AppRouter() {
     <Suspense fallback={<FullPageLoader />}>
       <Routes>
         <Route path="/privacidad" element={<PrivacyPage />} />
+        <Route path="/terminos" element={<TermsPage />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
