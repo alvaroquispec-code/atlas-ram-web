@@ -440,3 +440,35 @@ export interface PublishedAntibiogram {
   breakpointStandard: string
   rows: PublishedRow[]
 }
+
+/** Colegio profesional que emite la colegiatura. */
+export type ProfessionalBody = 'CMP' | 'CTMP' | 'CBP' | 'CQFP'
+export type AccessRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
+/** Datos extra del registro de un profesional de la salud. */
+export interface ProfessionalRequest {
+  facilityId: number
+  requestedRole: Role
+  professionalBody: ProfessionalBody
+  registrationNumber: string
+}
+
+/** Solicitud de acceso profesional, con lo que el sistema ya comprobó. */
+export interface AccessRequest {
+  id: number
+  userEmail: string
+  userFullName: string
+  facilityId: number
+  facilityName: string
+  facilityRenipressCode: string | null
+  requestedRole: Role
+  professionalBody: ProfessionalBody
+  professionalBodyLabel: string
+  registrationNumber: string
+  lookupUrl: string | null
+  status: AccessRequestStatus
+  createdAt: string
+  decidedAt: string | null
+  note: string | null
+  checks: string[]
+}
