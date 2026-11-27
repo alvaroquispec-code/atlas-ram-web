@@ -55,7 +55,8 @@ export default function PrivacyPage() {
         <ul className="list-disc space-y-1 pl-6">
           <li>Toda la comunicación va cifrada (HTTPS).</li>
           <li>Control de acceso por rol y por establecimiento en cada petición (JWT).</li>
-          <li>Límite de intentos fallidos de inicio de sesión.</li>
+          <li>Límite de intentos fallidos de inicio de sesión y límite de consultas por minuto para quien no inició sesión (anti-scraping).</li>
+          <li>Contraseñas con BCrypt e identificadores de pacientes seudonimizados con HMAC-SHA256.</li>
           <li>Registro de auditoría de accesos a datos individuales.</li>
         </ul>
         <p>
@@ -65,11 +66,37 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-2">
+        <h2 className="text-lg font-semibold text-slate-900">Dónde se guardan y por cuánto tiempo</h2>
+        <p>
+          Los datos se alojan en Amazon Web Services (AWS), en servidores fuera del Perú. Es un flujo transfronterizo de
+          datos personales en el sentido de la Ley 29733: AWS actúa como encargado del tratamiento y no usa los datos para
+          fines propios.
+        </p>
+        <p>
+          Tu cuenta se conserva mientras esté activa. El registro de auditoría se conserva al menos dos años, como pide el
+          reglamento.
+        </p>
+        <p>
+          Atlas RAM es un proyecto universitario (UTEC) en etapa piloto. Antes de trabajar con datos reales de un hospital,
+          se inscribirá el banco de datos en el Registro Nacional de Protección de Datos Personales y se firmará un
+          convenio con el establecimiento.
+        </p>
+      </section>
+
+      <section className="space-y-2">
         <h2 className="text-lg font-semibold text-slate-900">Tus derechos</h2>
         <p>
           Puedes pedir acceder a tus datos, corregirlos, cancelarlos u oponerte a su tratamiento (derechos ARCO) a través
           del administrador de tu establecimiento o del equipo de Atlas RAM. Si cancelas tu cuenta, se desactiva y deja de
-          poder iniciar sesión.
+          poder iniciar sesión. Si no recibes respuesta, puedes reclamar ante la Autoridad Nacional de Protección de Datos
+          Personales (Ministerio de Justicia y Derechos Humanos).
+        </p>
+        <p>
+          Ver también los{' '}
+          <Link to="/terminos" className="font-medium text-brand-600 hover:underline">
+            términos y condiciones de uso
+          </Link>
+          .
         </p>
       </section>
     </main>
