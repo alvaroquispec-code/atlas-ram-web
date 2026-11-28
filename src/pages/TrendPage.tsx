@@ -195,7 +195,7 @@ export default function TrendPage() {
           <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
             <TrendChart points={data.points} />
             <p className="mt-2 text-xs text-slate-500">
-              Cada punto es el % de resistentes del periodo; la barra vertical es su intervalo de confianza al 95 %.
+              Pasa el mouse sobre el gráfico para ver cada periodo. Una banda ancha sobre pocas barras significa poca evidencia en ese periodo.
             </p>
           </div>
         </>

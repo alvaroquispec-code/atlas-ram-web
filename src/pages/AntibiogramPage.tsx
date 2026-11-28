@@ -4,6 +4,7 @@ import Alert from '../components/Alert'
 import Button from '../components/Button'
 import CiBar from '../components/CiBar'
 import DataOriginNotice from '../components/DataOriginNotice'
+import PetriPlate from '../components/PetriPlate'
 import SelectField from '../components/SelectField'
 import StandardsNote from '../components/StandardsNote'
 import Spinner from '../components/Spinner'
@@ -19,6 +20,8 @@ type FilterKey = keyof typeof DEFAULTS
 
 // Colores del %S: verde ≥ 90 %, ámbar 70–89 %, rojo < 70 %.
 const toneFor = (s: number) => (s >= 90 ? 'bg-emerald-500' : s >= 70 ? 'bg-amber-400' : 'bg-red-500')
+// Muestras de la leyenda con los mismos colores que CiBar.
+const SWATCH = { ok: 'var(--color-ok)', mid: 'var(--color-res-1)', bad: 'var(--color-res-3)' }
 
 export default function AntibiogramPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -37,6 +40,9 @@ export default function AntibiogramPage() {
   }
 
   const catalogs = useFetch((signal) => catalogService.microorganisms(signal), [])
+  // Códigos de los discos (CRO, MEM…) para dibujar la placa.
+  const drugs = useFetch((signal) => catalogService.antibiotics(signal), [])
+  const codeOf = (id: number) => drugs.data?.find((a) => a.id === id)?.code ?? '?'
   const result = useFetch(
     (signal) =>
       antibiogramService.cumulative(
@@ -134,8 +140,24 @@ export default function AntibiogramPage() {
             </p>
           )}
           {Object.entries(groups).map(([organism, rows]) => (
-            <div key={organism} className="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+            <div key={organism} className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
               <h2 className="border-b border-slate-200 px-4 py-3 font-semibold italic">{organism}</h2>
+              <div className="grid lg:grid-cols-[17rem_1fr]">
+              {/* La placa: un disco por antibiótico (hasta 8, con datos suficientes); el halo es el % de sensibles. */}
+              <figure className="flex flex-col items-center gap-2 border-b border-slate-200 p-4 lg:border-b-0 lg:border-r">
+                <PetriPlate
+                  className="h-60 w-60"
+                  disks={rows
+                    .filter((e) => e.sufficientData && !e.breakpointSite)
+                    .slice(0, 8)
+                    .map((e) => ({ code: codeOf(e.antibioticId), name: e.antibioticName, susceptible: e.susceptiblePercentage }))}
+                  label={`Placa de antibiograma de ${organism}`}
+                />
+                <figcaption className="text-center text-xs text-slate-500">
+                  Halo más grande, más aislamientos sensibles. Sin halo: la bacteria ya resiste.
+                </figcaption>
+              </figure>
+              <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="text-xs uppercase text-slate-500">
                   <tr>
@@ -173,12 +195,14 @@ export default function AntibiogramPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
+              </div>
             </div>
           ))}
           <div className="flex flex-wrap gap-4 text-xs text-slate-600">
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-emerald-500" />≥ 90 % sensibles</span>
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-amber-400" />70–89 %</span>
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-red-500" />&lt; 70 %</span>
+            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded" style={{ background: SWATCH.ok }} />≥ 90 % sensibles</span>
+            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded" style={{ background: SWATCH.mid }} />70–89 %</span>
+            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded" style={{ background: SWATCH.bad }} />&lt; 70 %</span>
             <span>La línea negra es el intervalo de confianza al 95 %.</span>
           </div>
         </>

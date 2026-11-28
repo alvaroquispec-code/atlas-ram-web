@@ -3,7 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
 import LimaMap from '../components/LimaMap'
-import ResistanceGrid from '../components/ResistanceGrid'
+import PetriPlate from '../components/PetriPlate'
+import ResistanceGrid, { resColor } from '../components/ResistanceGrid'
 import SelectField from '../components/SelectField'
 import SiteToggle from '../components/SiteToggle'
 import Spinner from '../components/Spinner'
@@ -69,49 +70,31 @@ export default function DashboardPage() {
     null,
   )
 
+  const micro = microorganisms.find((m) => m.id === filters.microorganismId)
+  const drug = antibiotics.find((a) => a.id === filters.antibioticId)
+
   return (
-    <section className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Resistencia por distrito</h1>
-          <p className="text-sm text-slate-500">
-            Hola, {user?.fullName}. Elige un microorganismo y un antibiótico para ver el porcentaje de aislamientos
-            resistentes en cada distrito de Lima y Callao.
-          </p>
-        </div>
-        <div role="radiogroup" aria-label="Vista" className="inline-flex rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
-          {([
-            { value: 'data', label: 'Vista de datos', icon: LayoutGrid },
-            { value: 'map', label: 'Vista de mapa', icon: MapIcon },
-          ] as const).map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              role="radio"
-              aria-checked={view === option.value}
-              onClick={() => setView(option.value)}
-              className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                view === option.value ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <option.icon size={16} aria-hidden />
-              {option.label}
-            </button>
-          ))}
-        </div>
+    <section className="space-y-8">
+      <header className="space-y-1">
+        <p className="text-sm text-slate-500">Hola, {user?.fullName}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Resistencia por distrito</h1>
+        <p className="max-w-2xl text-sm text-slate-600">
+          Porcentaje de aislamientos resistentes en cada distrito de Lima y Callao, con el primer aislamiento por paciente
+          (CLSI M39).
+        </p>
       </header>
 
       {/* Lo que se ve aquí sale de la base de demostración; las cifras publicadas por hospitales están aparte. */}
-      <p className="rounded-lg bg-amber-50 px-4 py-2 text-sm text-amber-900 ring-1 ring-amber-200">
-        <b>Datos de demostración:</b> los aislamientos de este tablero son simulados (calibrados con estudios peruanos publicados), no de pacientes reales. Las cifras
-        publicadas por hospitales peruanos están en{' '}
+      <p className="border-l-4 border-res-1 bg-amber-50 px-4 py-2 text-sm text-slate-700">
+        <b>Datos de demostración:</b> los aislamientos de este tablero son simulados (calibrados con estudios peruanos
+        publicados), no de pacientes reales. Las cifras publicadas por hospitales peruanos están en{' '}
         <Link to="/real-data" className="font-medium underline">
           Datos reales
         </Link>
         .
       </p>
 
-      <div className="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 border-y border-slate-200 py-4 lg:grid-cols-[1.4fr_1.4fr_1fr_1fr] [&>*:nth-child(-n+2)]:col-span-2 lg:[&>*:nth-child(-n+2)]:col-span-1">
         <SelectField
           label="Microorganismo"
           value={filters.microorganismId}
@@ -157,14 +140,63 @@ export default function DashboardPage() {
         </Alert>
       ) : (
         <>
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Stat label="Resistencia global" value={overall === null ? '—' : `${overall.toFixed(1)} %`} />
-            <Stat label="Distritos con datos suficientes" value={`${withData.length} de ${districts.length}`} />
-            <Stat
-              label="Distrito con más resistencia"
-              value={worst ? `${worst.name} (${worst.resistancePercentage?.toFixed(0)} %)` : '—'}
-            />
-          </dl>
+          <div className="grid grid-cols-1 gap-y-3 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-x-8 sm:gap-y-2">
+            <div className="flex items-center gap-4 sm:row-span-2">
+              <PetriPlate
+                className="h-28 w-28 shrink-0 sm:h-36 sm:w-36"
+                disks={drug && overall !== null ? [{ code: drug.code, name: drug.name, susceptible: 100 - overall }] : []}
+                label={
+                  overall === null
+                    ? 'Sin datos suficientes'
+                    : `Disco de ${drug?.name ?? 'antibiótico'}: halo proporcional al ${(100 - overall).toFixed(0)} % de aislamientos no resistentes`
+                }
+              />
+              <div>
+                <p className="text-6xl font-bold leading-none tracking-tight text-slate-900 tabular-nums sm:text-7xl">
+                  {overall === null ? '—' : `${overall.toFixed(0)} %`}
+                </p>
+                <span className="mt-3 block h-1.5 rounded-full" style={{ background: resColor(overall) }} aria-hidden />
+              </div>
+            </div>
+            <p className="max-w-xl text-lg leading-snug text-slate-700 sm:text-xl">
+              de los aislamientos de <em className="font-semibold text-slate-900">{micro ? microorganismLabel(micro) : 'este microorganismo'}</em>{' '}
+              en Lima y Callao son resistentes a{' '}
+              <span className="font-semibold text-slate-900">{drug ? drug.name.toLowerCase() : 'este antibiótico'}</span>.
+            </p>
+            <p className="text-sm text-slate-600">
+              {worst ? (
+                <>
+                  El distrito más alto es <b className="font-semibold text-slate-900">{worst.name}</b> ({worst.resistancePercentage?.toFixed(0)} %).{' '}
+                </>
+              ) : null}
+              {withData.length} de {districts.length} distritos tienen al menos 30 resultados. El halo alrededor del disco
+              crece con los aislamientos que todavía responden al antibiótico.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-2">
+            <h2 className="text-base font-semibold text-slate-900">Por distrito</h2>
+            <div role="radiogroup" aria-label="Vista" className="inline-flex rounded-md bg-slate-100 p-0.5">
+              {([
+                { value: 'data', label: 'Lista', icon: LayoutGrid },
+                { value: 'map', label: 'Mapa', icon: MapIcon },
+              ] as const).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={view === option.value}
+                  onClick={() => setView(option.value)}
+                  className={`inline-flex items-center gap-1.5 rounded px-3 py-1 text-sm transition-colors ${
+                    view === option.value ? 'bg-white font-medium text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <option.icon size={14} aria-hidden />
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
           {withData.length === 0 && (
             <Alert tone="warning">Ningún distrito llega a 30 resultados en este periodo. Amplía el rango de fechas.</Alert>
           )}
@@ -172,14 +204,5 @@ export default function DashboardPage() {
         </>
       )}
     </section>
-  )
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="mt-1 text-xl font-semibold text-slate-800">{value}</dd>
-    </div>
   )
 }

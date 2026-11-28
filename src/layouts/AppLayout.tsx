@@ -1,70 +1,177 @@
-import { BadgeCheck, BellRing, Boxes, FlaskConical, LayoutDashboard, LogOut, Pill, Ruler, Stethoscope, Table2, TrendingUp, Upload, UserRound, Users } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
-import Button from '../components/Button'
-import ThemeToggle from '../components/ThemeToggle'
+import {
+  BadgeCheck,
+  BellRing,
+  Boxes,
+  FlaskConical,
+  LogOut,
+  Map as MapIcon,
+  Menu,
+  Pill,
+  Ruler,
+  Stethoscope,
+  Table2,
+  TrendingUp,
+  Upload,
+  Users,
+  X,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import BrandMark from '../components/BrandMark'
 import ErrorBoundary from '../components/ErrorBoundary'
+import ThemeToggle from '../components/ThemeToggle'
 import { useAuth } from '../hooks/useAuth'
 import type { Role } from '../types/api'
 
-const NAV_ITEMS: { to: string; label: string; icon: typeof LayoutDashboard; roles?: Role[] }[] = [
-  { to: '/dashboard', label: 'Mapa', icon: LayoutDashboard },
-  { to: '/antibiogram', label: 'Antibiograma', icon: Table2 },
-  { to: '/trend', label: 'Tendencia', icon: TrendingUp },
-  { to: '/wisca', label: 'Tratamiento', icon: Stethoscope },
-  { to: '/real-data', label: 'Datos reales', icon: BadgeCheck },
-  { to: '/alerts', label: 'Alertas', icon: BellRing, roles: ['ADMIN', 'EPIDEMIOLOGIST'] },
-  { to: '/inventory', label: 'Inventario', icon: Boxes, roles: ['ADMIN', 'PHARMACIST', 'EPIDEMIOLOGIST'] },
-  { to: '/isolates', label: 'Aislamientos', icon: FlaskConical, roles: ['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST'] },
-  { to: '/uploads', label: 'Cargar', icon: Upload, roles: ['ADMIN', 'LAB_TECHNICIAN'] },
-  { to: '/antibiotics', label: 'Antibióticos', icon: Pill, roles: ['ADMIN'] },
-  { to: '/breakpoints', label: 'Puntos de corte', icon: Ruler, roles: ['ADMIN'] },
-  { to: '/users', label: 'Usuarios', icon: Users, roles: ['ADMIN'] },
+type NavItem = { to: string; label: string; icon: typeof MapIcon; roles?: Role[] }
+
+/** Menú agrupado por para qué sirve cada pantalla; cada grupo solo muestra lo que el rol puede abrir. */
+const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
+  {
+    label: 'Vigilancia',
+    items: [
+      { to: '/dashboard', label: 'Mapa de resistencia', icon: MapIcon },
+      { to: '/antibiogram', label: 'Antibiograma', icon: Table2 },
+      { to: '/trend', label: 'Tendencia', icon: TrendingUp },
+      { to: '/wisca', label: 'Tratamiento empírico', icon: Stethoscope },
+      { to: '/real-data', label: 'Datos reales publicados', icon: BadgeCheck },
+    ],
+  },
+  {
+    label: 'Hospital',
+    items: [
+      { to: '/alerts', label: 'Alertas', icon: BellRing, roles: ['ADMIN', 'EPIDEMIOLOGIST'] },
+      { to: '/inventory', label: 'Inventario', icon: Boxes, roles: ['ADMIN', 'PHARMACIST', 'EPIDEMIOLOGIST'] },
+      { to: '/isolates', label: 'Aislamientos', icon: FlaskConical, roles: ['ADMIN', 'LAB_TECHNICIAN', 'EPIDEMIOLOGIST'] },
+      { to: '/uploads', label: 'Cargar resultados', icon: Upload, roles: ['ADMIN', 'LAB_TECHNICIAN'] },
+    ],
+  },
+  {
+    label: 'Administración',
+    items: [
+      { to: '/users', label: 'Usuarios', icon: Users, roles: ['ADMIN'] },
+      { to: '/antibiotics', label: 'Antibióticos', icon: Pill, roles: ['ADMIN'] },
+      { to: '/breakpoints', label: 'Puntos de corte', icon: Ruler, roles: ['ADMIN'] },
+    ],
+  },
 ]
 
+const ROLE_LABELS: Record<Role, string> = {
+  ADMIN: 'Administración',
+  LAB_TECHNICIAN: 'Laboratorio',
+  EPIDEMIOLOGIST: 'Epidemiología',
+  PUBLIC_VIEWER: 'Consulta pública',
+  PHARMACIST: 'Farmacia',
+}
+
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm ${isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100'}`
+  `flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 ${
+    isActive
+      ? 'bg-brand-50 font-semibold text-brand-700 shadow-[inset_2px_0_0_var(--color-brand-600)]'
+      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
+  }`
 
 export default function AppLayout() {
   const { user, logout, hasRole } = useAuth()
-  // Cada link se muestra solo a los roles que pueden usarlo; las rutas además están protegidas.
-  const visibleItems = NAV_ITEMS.filter((item) => !item.roles || hasRole(...item.roles))
-  const links = visibleItems.map((item) => (
-    <NavLink key={item.to} to={item.to} className={linkClass}>
-      <item.icon size={16} aria-hidden />
-      {item.label}
-    </NavLink>
-  ))
-  return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="shrink-0 whitespace-nowrap font-semibold text-brand-700">Atlas RAM</span>
+  const [open, setOpen] = useState(false)
+  const location = useLocation()
+
+  // En el celular el menú se cierra al cambiar de pantalla.
+  useEffect(() => setOpen(false), [location.pathname])
+
+  const groups = NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((item) => !item.roles || hasRole(...item.roles)),
+  })).filter((g) => g.items.length > 0)
+
+  const sidebar = (
+    <nav aria-label="Secciones" className="flex h-full flex-col gap-6 px-3 py-5">
+      <NavLink to="/dashboard" className="flex items-center gap-2 px-2.5 text-[15px] font-bold tracking-tight text-slate-900">
+        <BrandMark className="h-6 w-6" />
+        Atlas RAM
+      </NavLink>
+      <div className="flex-1 space-y-5 overflow-y-auto">
+        {groups.map((g) => (
+          <div key={g.label} className="space-y-0.5">
+            <p className="px-2.5 pb-1 text-xs font-medium text-slate-500">{g.label}</p>
+            {g.items.map((item) => (
+              <NavLink key={item.to} to={item.to} className={linkClass}>
+                <item.icon size={16} strokeWidth={1.75} aria-hidden />
+                {item.label}
+              </NavLink>
+            ))}
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <NavLink
-              to="/account"
-              className={linkClass}
-              aria-label="Mi cuenta"
-              title="Mi cuenta: cambiar contraseña y sesiones"
-            >
-              <UserRound size={16} aria-hidden />
-              <span className="hidden whitespace-nowrap sm:inline">{user?.fullName}</span>
-            </NavLink>
-            <Button variant="ghost" onClick={logout} className="whitespace-nowrap" aria-label="Cerrar sesión" title="Cerrar sesión">
-              <LogOut size={16} aria-hidden />
-              <span className="hidden sm:inline">Cerrar sesión</span>
-            </Button>
-          </div>
+        ))}
+      </div>
+      <div className="space-y-1 border-t border-slate-200 pt-4">
+        <NavLink to="/account" className={linkClass} title="Mi cuenta: correo, contraseña y sesiones">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-600 text-xs font-semibold text-white">
+            {(user?.fullName ?? '?').trim().charAt(0).toUpperCase()}
+          </span>
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate">{user?.fullName}</span>
+            <span className="block text-xs font-normal text-slate-500">{user ? ROLE_LABELS[user.role] : ''}</span>
+          </span>
+        </NavLink>
+        <div className="flex items-center justify-between px-1">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={logout}
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-500"
+          >
+            <LogOut size={16} strokeWidth={1.75} aria-hidden />
+            Cerrar sesión
+          </button>
         </div>
-        {/* Menú en su propia fila: con 10 secciones (admin) no entra junto al logo; en pantallas angostas se desliza */}
-        <nav className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 pb-2">{links}</nav>
+      </div>
+    </nav>
+  )
+
+  return (
+    <div className="min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
+      {/* Escritorio: barra lateral fija */}
+      <aside className="sticky top-0 hidden h-screen border-r border-slate-200 bg-white lg:block">{sidebar}</aside>
+
+      {/* Celular y tablet: barra superior con menú desplegable */}
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur lg:hidden">
+        <span className="flex items-center gap-2 font-bold tracking-tight text-slate-900">
+          <BrandMark className="h-6 w-6" />
+          Atlas RAM
+        </span>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Abrir menú"
+          aria-expanded={open}
+          className="rounded-md p-2 text-slate-700 hover:bg-slate-100"
+        >
+          <Menu size={20} aria-hidden />
+        </button>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-8">
-        <ErrorBoundary>
-          <Outlet />
-        </ErrorBoundary>
+      {open && (
+        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú">
+          <button type="button" aria-label="Cerrar menú" className="absolute inset-0 bg-slate-900/40" onClick={() => setOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-white shadow-xl">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Cerrar menú"
+              className="absolute right-3 top-4 rounded-md p-1.5 text-slate-600 hover:bg-slate-100"
+            >
+              <X size={18} aria-hidden />
+            </button>
+            {sidebar}
+          </aside>
+        </div>
+      )}
+
+      <main className="min-w-0 px-4 py-6 sm:px-8 lg:px-10 lg:py-8">
+        <div className="mx-auto max-w-6xl">
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
+        </div>
       </main>
     </div>
   )

@@ -7,24 +7,10 @@ import {
   LIMA_MAP_WIDTH,
 } from '../data/limaDistricts'
 import type { DistrictResistance } from '../types/api'
+import { RES_LEGEND, resColor } from './ResistanceGrid'
 
-/** Mismos cortes que los cuadros por distrito (ResistanceGrid). */
-function fillFor(d: DistrictResistance | undefined) {
-  const p = d?.sufficientData ? d.resistancePercentage : null
-  if (p == null) return 'fill-slate-200'
-  if (p >= 60) return 'fill-red-600'
-  if (p >= 40) return 'fill-orange-400'
-  if (p >= 20) return 'fill-amber-300'
-  return 'fill-emerald-300'
-}
-
-const LEGEND = [
-  { label: '< 20 %', fill: 'bg-emerald-300' },
-  { label: '20–39 %', fill: 'bg-amber-300' },
-  { label: '40–59 %', fill: 'bg-orange-400' },
-  { label: '≥ 60 %', fill: 'bg-red-600' },
-  { label: 'Menos de 30 resultados', fill: 'bg-slate-200' },
-]
+/** Mismos cortes y colores que la lista por distrito (ResistanceGrid). */
+const fillFor = (d: DistrictResistance | undefined) => resColor(d?.sufficientData ? d.resistancePercentage : null)
 
 const FULL = `0 0 ${LIMA_MAP_WIDTH} ${LIMA_MAP_HEIGHT}`
 /** Lima centro y el Callao, donde los distritos son pequeños. */
@@ -125,9 +111,9 @@ export default function LimaMap({ districts }: { districts: DistrictResistance[]
                   role="button"
                   aria-label={label(d, s.ubigeo)}
                   {...handlers(s.ubigeo)}
-                  className={`${fillFor(d)} cursor-pointer stroke-slate-50 outline-none transition-opacity hover:opacity-80 focus:opacity-80`}
+                  className="cursor-pointer stroke-slate-50 outline-none transition-opacity hover:opacity-80 focus:opacity-80"
                   strokeWidth={isActive ? 4 : 1.5}
-                  style={isActive ? { stroke: '#2563eb' } : undefined}
+                  style={{ fill: fillFor(d), ...(isActive ? { stroke: 'var(--color-brand-600)' } : {}) }}
                 />
               )
             })}
@@ -144,9 +130,9 @@ export default function LimaMap({ districts }: { districts: DistrictResistance[]
                   role="button"
                   aria-label={label(d, m.ubigeo)}
                   {...handlers(m.ubigeo)}
-                  className={`${fillFor(d)} cursor-pointer outline-none`}
+                  className="cursor-pointer outline-none"
                   strokeWidth={isActive ? 4 : 2}
-                  style={{ stroke: isActive ? '#2563eb' : '#334155' }}
+                  style={{ fill: fillFor(d), stroke: isActive ? 'var(--color-brand-600)' : 'var(--color-slate-700)' }}
                 />
               )
             })}
@@ -157,9 +143,9 @@ export default function LimaMap({ districts }: { districts: DistrictResistance[]
         </div>
       </div>
       <ul className="flex flex-wrap gap-4 text-sm text-slate-600">
-        {LEGEND.map((item) => (
+        {RES_LEGEND.map((item) => (
           <li key={item.label} className="flex items-center gap-2">
-            <span className={`h-4 w-4 rounded ring-1 ring-slate-300 ${item.fill}`} aria-hidden />
+            <span className="h-4 w-4 rounded ring-1 ring-slate-300" style={{ background: item.color }} aria-hidden />
             {item.label}
           </li>
         ))}
