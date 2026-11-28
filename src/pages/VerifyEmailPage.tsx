@@ -2,6 +2,7 @@ import { CheckCircle2, MailWarning } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Spinner from '../components/Spinner'
+import { useAuth } from '../hooks/useAuth'
 import { verificationService } from '../services/verificationService'
 import { toApiError } from '../utils/apiError'
 
@@ -15,6 +16,7 @@ export default function VerifyEmailPage() {
   const token = params.get('token') ?? ''
   const [state, setState] = useState<{ ok: boolean; message: string } | null>(null)
   const started = useRef(false)
+  const { isAuthenticated, refreshUser } = useAuth()
 
   useEffect(() => {
     // StrictMode monta dos veces en desarrollo; el token es de un solo uso.
@@ -26,7 +28,11 @@ export default function VerifyEmailPage() {
     }
     verificationService
       .verify(token)
-      .then((r) => setState({ ok: true, message: r.message }))
+      .then((r) => {
+        setState({ ok: true, message: r.message })
+        // Si en este navegador ya había sesión, se actualiza para que la puerta de verificación se abra.
+        if (isAuthenticated) refreshUser().catch(() => {})
+      })
       .catch((err) => setState({ ok: false, message: toApiError(err).message }))
   }, [token])
 
@@ -53,8 +59,8 @@ export default function VerifyEmailPage() {
               Puedes pedir un enlace nuevo desde Mi cuenta. Los enlaces vencen a las 24 horas y sirven una sola vez.
             </p>
           )}
-          <Link to="/account" className="text-sm font-medium text-brand-600 hover:underline">
-            Ir a Mi cuenta
+          <Link to="/dashboard" className="text-sm font-medium text-brand-600 hover:underline">
+            Entrar a Atlas RAM
           </Link>
         </>
       )}

@@ -20,6 +20,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import BrandMark from '../components/BrandMark'
 import ErrorBoundary from '../components/ErrorBoundary'
 import ThemeToggle from '../components/ThemeToggle'
+import VerifyEmailGate from '../components/VerifyEmailGate'
 import { useAuth } from '../hooks/useAuth'
 import type { Role } from '../types/api'
 
@@ -79,7 +80,10 @@ export default function AppLayout() {
   // En el celular el menú se cierra al cambiar de pantalla.
   useEffect(() => setOpen(false), [location.pathname])
 
-  const groups = NAV_GROUPS.map((g) => ({
+  // Cuenta sin correo confirmado: no ve secciones ni datos, solo la puerta de verificación.
+  const unverified = user?.emailVerified === false
+
+  const groups = (unverified ? [] : NAV_GROUPS).map((g) => ({
     ...g,
     items: g.items.filter((item) => !item.roles || hasRole(...item.roles)),
   })).filter((g) => g.items.length > 0)
@@ -168,9 +172,7 @@ export default function AppLayout() {
 
       <main className="min-w-0 px-4 py-6 sm:px-8 lg:px-10 lg:py-8">
         <div className="mx-auto max-w-6xl">
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
+          <ErrorBoundary>{unverified ? <VerifyEmailGate /> : <Outlet />}</ErrorBoundary>
         </div>
       </main>
     </div>
