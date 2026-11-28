@@ -177,8 +177,9 @@ export default function RegisterPage() {
             />
             {professionalError && <p className="text-sm text-red-600">{professionalError}</p>}
             <p className="text-xs text-slate-500">
-              Atlas RAM comprueba el formato, el establecimiento y que el rol corresponda a tu profesión; un administrador
-              confirma tu colegiatura y aprueba. Mientras tanto, tienes acceso de consulta.
+              Te enviaremos un enlace para verificar tu correo. Si usas el correo institucional de tu hospital, el acceso
+              se aprueba solo al verificarlo; si no, lo aprueba el jefe de tu establecimiento tras confirmar tu
+              colegiatura. Mientras tanto, tienes acceso de consulta. Tu colegiatura se guarda cifrada.
             </p>
           </fieldset>
         )}

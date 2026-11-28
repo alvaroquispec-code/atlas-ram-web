@@ -1,5 +1,5 @@
 import { LayoutGrid, Map as MapIcon, RotateCw } from 'lucide-react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import Alert from '../components/Alert'
 import Button from '../components/Button'
 import LimaMap from '../components/LimaMap'
@@ -100,6 +100,16 @@ export default function DashboardPage() {
           ))}
         </div>
       </header>
+
+      {/* Lo que se ve aquí sale de la base de demostración; las cifras publicadas por hospitales están aparte. */}
+      <p className="rounded-lg bg-amber-50 px-4 py-2 text-sm text-amber-900 ring-1 ring-amber-200">
+        <b>Datos de demostración:</b> los aislamientos de este tablero son simulados (calibrados con estudios peruanos publicados), no de pacientes reales. Las cifras
+        publicadas por hospitales peruanos están en{' '}
+        <Link to="/real-data" className="font-medium underline">
+          Datos reales
+        </Link>
+        .
+      </p>
 
       <div className="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-4">
         <SelectField

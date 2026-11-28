@@ -1,7 +1,10 @@
 import { KeyRound, LogOut, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import Alert from '../components/Alert'
+import EmailVerificationCard from '../components/EmailVerificationCard'
+import ManagedFacilitiesPanel from '../components/ManagedFacilitiesPanel'
 import MyAccessRequests from '../components/MyAccessRequests'
+import { Link } from 'react-router-dom'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Button from '../components/Button'
 import TextField from '../components/TextField'
@@ -45,6 +48,8 @@ export default function AccountPage() {
         </p>
       </header>
 
+      <EmailVerificationCard />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
@@ -87,6 +92,13 @@ export default function AccountPage() {
         </div>
       </div>
       {user && <MyAccessRequests role={user.role} />}
+      {user && user.role !== 'ADMIN' && <ManagedFacilitiesPanel />}
+      <p className="text-sm text-slate-500">
+        ¿Tu clínica u hospital aún no está en Atlas RAM?{' '}
+        <Link to="/establecimientos/registrar" className="font-medium text-brand-600 hover:underline">
+          Regístralo con su RUC y código IPRESS
+        </Link>
+      </p>
     </section>
   )
 }

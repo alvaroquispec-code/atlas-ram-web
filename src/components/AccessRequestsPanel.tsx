@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useFetch } from '../hooks/useFetch'
 import { useToast } from '../hooks/useToast'
 import { accessRequestService } from '../services/accessRequestService'
+import { isWarningCheck } from '../services/verificationService'
 import type { AccessRequest, Role } from '../types/api'
 import { toApiError } from '../utils/apiError'
 import Button from './Button'
@@ -14,8 +15,9 @@ const ROLE_LABELS: Partial<Record<Role, string>> = {
 }
 
 /**
- * Solicitudes de acceso profesional pendientes. El sistema ya comprobó lo que puede comprobar solo; el
- * administrador confirma la colegiatura en el buscador del colegio y aprueba o rechaza con un clic.
+ * Solicitudes de acceso profesional pendientes. Las que cumplen (correo institucional verificado del
+ * establecimiento) ya se aprobaron solas; aquí llegan las demás. Las ve el administrador o el jefe del
+ * establecimiento, que confirma la colegiatura en el buscador del colegio y aprueba con un clic.
  */
 export default function AccessRequestsPanel({ onDecided }: { onDecided: () => void }) {
   const { showToast } = useToast()
@@ -75,14 +77,14 @@ export default function AccessRequestsPanel({ onDecided }: { onDecided: () => vo
                     rel="noreferrer"
                     className="ml-2 inline-flex items-center gap-1 text-brand-700 underline"
                   >
-                    Verificar en el buscador del colegio <ExternalLink size={12} aria-hidden />
+                    Verificar en el buscador del colegio (debe figurar HÁBIL) <ExternalLink size={12} aria-hidden />
                   </a>
                 )}
               </p>
               <ul className="mt-2 space-y-0.5 text-xs">
                 {r.checks.map((c) => (
-                  <li key={c} className={c.startsWith('Atención') ? 'text-amber-700' : 'text-emerald-700'}>
-                    {c.startsWith('Atención') ? '⚠' : '✓'} {c}
+                  <li key={c} className={isWarningCheck(c) ? 'text-amber-700' : 'text-emerald-700'}>
+                    {isWarningCheck(c) ? '⚠' : '✓'} {c}
                   </li>
                 ))}
               </ul>

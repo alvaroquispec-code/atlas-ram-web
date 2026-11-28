@@ -24,6 +24,8 @@ const AlertsPage = lazy(() => import('../pages/AlertsPage'))
 const InventoryPage = lazy(() => import('../pages/InventoryPage'))
 const BreakpointsPage = lazy(() => import('../pages/BreakpointsPage'))
 const AccountPage = lazy(() => import('../pages/AccountPage'))
+const VerifyEmailPage = lazy(() => import('../pages/VerifyEmailPage'))
+const FacilityRequestPage = lazy(() => import('../pages/FacilityRequestPage'))
 const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 
@@ -33,6 +35,7 @@ export default function AppRouter() {
       <Routes>
         <Route path="/privacidad" element={<PrivacyPage />} />
         <Route path="/terminos" element={<TermsPage />} />
+        <Route path="/verificar-correo" element={<VerifyEmailPage />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -124,6 +127,7 @@ export default function AppRouter() {
             }
           />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/establecimientos/registrar" element={<FacilityRequestPage />} />
           <Route path="/forbidden" element={<ForbiddenPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

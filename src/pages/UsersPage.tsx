@@ -2,6 +2,7 @@ import { KeyRound, RotateCw } from 'lucide-react'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import AccessRequestsPanel from '../components/AccessRequestsPanel'
+import FacilityRequestsPanel from '../components/FacilityRequestsPanel'
 import Alert from '../components/Alert'
 import Breadcrumbs from '../components/Breadcrumbs'
 import Button from '../components/Button'
@@ -60,6 +61,7 @@ export default function UsersPage() {
       </header>
 
       <AccessRequestsPanel onDecided={reload} />
+      <FacilityRequestsPanel />
 
       {error ? (
         <Alert tone="error" action={<Button variant="ghost" onClick={reload}><RotateCw size={16} aria-hidden />Reintentar</Button>}>
