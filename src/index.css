@@ -1,16 +1,61 @@
 @import "tailwindcss";
 
+@import "@fontsource-variable/public-sans";
+
+/* ---------------------------------------------------------------------------
+   Identidad visual de Atlas RAM: la tinción de Gram.
+   - Marca: violeta de genciana (cristal violeta), el colorante de los Gram positivos.
+   - Escala de resistencia: de la arena del agar Mueller-Hinton a la safranina, el colorante
+     de los Gram negativos. Más rojo = más resistencia; los cortes (20/40/60 %) son los del backend.
+   - Neutros: grises con un toque violeta (reemplazan la escala slate en toda la app).
+   - Tipografía: Public Sans, la fuente del sistema de diseño del gobierno de EE. UU. (USWDS),
+     pensada para servicios públicos; las cifras usan números tabulares para alinearse.
+   --------------------------------------------------------------------------- */
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --color-brand-50: #eef6ff;
-  --color-brand-100: #d9eaff;
-  --color-brand-500: #2b6cb0;
-  --color-brand-600: #225a96;
-  --color-brand-700: #1b4777;
+  --font-sans: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+
+  --color-slate-50: #f6f6f8;
+  --color-slate-100: #ececf1;
+  --color-slate-200: #dcdce4;
+  --color-slate-300: #bdbdca;
+  --color-slate-400: #8f8fa0;
+  --color-slate-500: #646476;
+  --color-slate-600: #4b4b5c;
+  --color-slate-700: #363644;
+  --color-slate-800: #22222e;
+  --color-slate-900: #15151e;
+
+  --color-brand-50: #f0edf8;
+  --color-brand-100: #ddd6f0;
+  --color-brand-200: #bdb0e2;
+  --color-brand-500: #5a43a0;
+  --color-brand-600: #4a3487;
+  --color-brand-700: #3a286c;
+
+  /* Escala de resistencia (agar → safranina) y "sin datos suficientes". */
+  --color-res-0: #e9e4cf;
+  --color-res-1: #ecc06d;
+  --color-res-2: #dd8045;
+  --color-res-3: #bd3b3d;
+  --color-res-nodata: #e4e4ea;
+  /* Sensible (S): verde apagado, para que no compita con la escala de resistencia. */
+  --color-ok: #4f8f6f;
 }
 
 body {
   @apply bg-slate-50 text-slate-800 antialiased;
+  font-feature-settings: "ss01";
+}
+
+/* Cifras alineadas en tablas, indicadores y gráficos. */
+table, .tabular-nums, dd, svg text {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Encabezados de tabla en minúscula normal: las mayúsculas sostenidas cansan y no aportan. */
+thead.uppercase, thead .uppercase {
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* ---------------------------------------------------------------------------
@@ -24,30 +69,32 @@ body {
 
 .dark {
   color-scheme: dark;
-  --color-slate-50: #0b1120;
-  --color-slate-100: #1e293b;
-  --color-slate-200: #2c3a50;
-  --color-slate-300: #475569;
-  --color-slate-400: #64748b;
-  --color-slate-500: #94a3b8;
-  --color-slate-600: #cbd5e1;
-  --color-slate-700: #e2e8f0;
-  --color-slate-800: #f1f5f9;
-  --color-slate-900: #f8fafc;
-  --color-brand-50: #13284a;
-  --color-brand-100: #1d3a66;
+  --color-slate-50: #121219;
+  --color-slate-100: #1f1f2a;
+  --color-slate-200: #2e2e3c;
+  --color-slate-300: #4a4a5c;
+  --color-slate-400: #6c6c80;
+  --color-slate-500: #9a9aae;
+  --color-slate-600: #c4c4d2;
+  --color-slate-700: #dedee8;
+  --color-slate-800: #eeeef4;
+  --color-slate-900: #f8f8fb;
+  --color-brand-50: #241d3a;
+  --color-brand-100: #33295a;
+  --color-res-0: #5c5640;
+  --color-res-nodata: #2e2e3c;
 }
 
 /* Superficies */
-.dark .bg-white { background-color: #111a2e; }
-.dark .bg-white\/90 { background-color: rgb(17 26 46 / 0.9); }
-.dark .bg-brand-50\/40 { background-color: rgb(29 58 102 / 0.35); }
-.dark .bg-slate-800 { background-color: #334155; }
+.dark .bg-white { background-color: #191922; }
+.dark .bg-white\/90 { background-color: rgb(25 25 34 / 0.9); }
+.dark .bg-brand-50\/40 { background-color: rgb(51 41 90 / 0.35); }
+.dark .bg-slate-800 { background-color: #363644; }
 
 /* Texto de marca legible sobre fondo oscuro */
 .dark .text-brand-600,
-.dark .text-brand-700 { color: #7cb4f0; }
-.dark .text-brand-100 { color: #d9eaff; }
+.dark .text-brand-700 { color: #b9a9ee; }
+.dark .text-brand-100 { color: #ddd6f0; }
 
 /* Avisos e insignias: fondos tenues y texto claro */
 .dark .bg-red-50 { background-color: rgb(127 29 29 / 0.35); }
@@ -62,7 +109,7 @@ body {
 .dark .ring-red-200 { --tw-ring-color: rgb(153 27 27 / 0.6); }
 .dark .ring-emerald-200 { --tw-ring-color: rgb(6 95 70 / 0.6); }
 .dark .ring-amber-200 { --tw-ring-color: rgb(146 64 14 / 0.6); }
-.dark .ring-brand-200 { --tw-ring-color: #2b6cb0; }
+.dark .ring-brand-200 { --tw-ring-color: #5a43a0; }
 
 /* Etiquetas de estado (Abierta, WATCH, Substock…): fondo oscuro translúcido y texto claro,
    para que el texto remapeado arriba no quede claro sobre un fondo también claro. */
@@ -71,9 +118,21 @@ body {
 .dark .bg-emerald-100 { background-color: rgb(6 78 59 / 0.6); }
 .dark .bg-sky-100 { background-color: rgb(12 74 110 / 0.6); }
 .dark .bg-orange-100 { background-color: rgb(124 45 18 / 0.6); }
-.dark .bg-slate-100 { background-color: #1e293b; }
-.dark .bg-slate-200 { background-color: #334155; }
+.dark .bg-slate-100 { background-color: #1f1f2a; }
+.dark .bg-slate-200 { background-color: #2e2e3c; }
 .dark .text-emerald-800 { color: #a7f3d0; }
 .dark .text-sky-800 { color: #bae6fd; }
 .dark .text-orange-800,
 .dark .text-orange-700 { color: #fed7aa; }
+
+/* Halos de inhibición de la placa (PetriPlate): crecen una sola vez, como al leer la placa a las 18 h. */
+@keyframes petri-grow {
+  from { transform: scale(0.2); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.petri-halo {
+  animation: petri-grow 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .petri-halo { animation: none; }
+}
