@@ -17,6 +17,8 @@ export interface User {
   role: Role
   active: boolean
   createdAt: string
+  /** Confirmó su correo con el enlace enviado (V20). */
+  emailVerified?: boolean
 }
 
 export interface Page<T> {
@@ -471,4 +473,45 @@ export interface AccessRequest {
   decidedAt: string | null
   note: string | null
   checks: string[]
+}
+
+export type FacilitySector = 'PUBLIC' | 'PRIVATE'
+
+export interface FacilityRequestInput {
+  name: string
+  ruc: string
+  renipressCode: string
+  districtId: number
+  claimedSector: FacilitySector
+}
+
+export interface FacilityRequest {
+  id: number
+  requesterEmail: string
+  name: string
+  ruc: string
+  renipressCode: string
+  districtName: string
+  claimedSector: FacilitySector
+  sectorByRenipress: FacilitySector | null
+  renipressName: string | null
+  renipressInstitution: string | null
+  status: AccessRequestStatus
+  createdAt: string
+  note: string | null
+  facilityId: number | null
+  checks: string[]
+}
+
+export interface ManagedFacility {
+  id: number
+  name: string
+}
+
+export interface DistrictOption {
+  id: number
+  ubigeo: string
+  name: string
+  province: string
+  department: string
 }

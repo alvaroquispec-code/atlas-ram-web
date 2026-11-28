@@ -26,7 +26,8 @@ export default function PrivacyPage() {
         <ul className="list-disc space-y-1 pl-6">
           <li>Tu nombre, tu correo y tu rol en la plataforma.</li>
           <li>Tu contraseña, nunca en texto: solo su huella con BCrypt, que no se puede revertir.</li>
-          <li>Si te registras como profesional de la salud: tu colegio profesional, tu número de colegiatura y el establecimiento donde trabajas.</li>
+          <li>Si te registras como profesional de la salud: tu colegio profesional, tu número de colegiatura (guardado cifrado con AES-256-GCM) y el establecimiento donde trabajas.</li>
+          <li>La fecha en que verificaste tu correo.</li>
           <li>Un registro de auditoría con qué datos individuales consultaste o modificaste, cuándo y desde qué IP.</li>
         </ul>
         <p>No pedimos tu DNI.</p>
