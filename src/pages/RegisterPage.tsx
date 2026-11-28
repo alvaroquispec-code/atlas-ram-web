@@ -217,6 +217,10 @@ export default function RegisterPage() {
       <p className="flex items-center justify-center gap-1 text-xs text-slate-500">
         <ShieldCheck size={14} aria-hidden /> Conexión cifrada (HTTPS). No pedimos DNI ni datos de pacientes.
       </p>
+      <p className="text-center text-xs text-slate-500">
+        ¿Representas una clínica u hospital que aún no está en Atlas RAM? Crea tu cuenta y regístralo desde Mi cuenta
+        con su RUC y su código IPRESS: el sector (público o privado) lo toma Atlas RAM del padrón RENIPRESS de SUSALUD.
+      </p>
       <p className="text-center text-sm text-slate-500">
         ¿Ya tienes cuenta?{' '}
         <Link to="/login" className="font-medium text-brand-600 hover:underline">
